@@ -1,159 +1,186 @@
 <template>
-  <div class="login-wrap">
-    <div class="ms-title">'音酷'-后台管理系统</div>
-    <div class="ms-login">
-      <!-- ruleForm：数据表单；rules：提示；ref：使用这个form的名字 -->
-      <el-form :model="ruleForm" :rules="rules" ref="ruleForm" class="form">
-        <el-form-item prop="username">
-          <!-- v-model：双向绑定，placeholder：不输入内容之前提示 -->
-          <el-input
-            prefix-icon="el-icon-user"
-            v-model="ruleForm.username"
-            placeholder="用户名"
-            auto-complete="off"
-          ></el-input>
-        </el-form-item>
-        <el-form-item prop="password">
-          <!-- type：密码显示* -->
-          <!-- <el-input prefix-icon="el-icon-unlock" type="password" v-model="ruleForm.password" placeholder="密码" auto-complete="false"></el-input> -->
-          <el-input
-            prefix-icon="el-icon-unlock"
-            :type="passwordVisible"
-            v-model="ruleForm.password"
-            placeholder="密码"
-            auto-complete="new-password"
-          >
-            <i slot="suffix" :class="icon" @click="showPass"></i>
-          </el-input>
-        </el-form-item>
-        <el-form-item prop="code">
-          <el-input
-            prefix-icon="el-icon-mobile-phone"
-            type="text"
-            placeholder="点击图片更换验证码"
-            v-model="ruleForm.code"
-            class="vertify_code"
-            auto-complete="false"
-          ></el-input>
-          <!-- <span class="code">验证码</span> -->
-          <img :src="imgUrl" @click="resetImg" class="vertify_img" />
-            <div class="login-code" @click="refreshCode">
-            <!--验证码组件-->
-            <s-identify :identifyCode="identifyCode"></s-identify>
-            </div>
-        </el-form-item>
-        <el-checkbox v-model="checked" class="remeberMe">记住我</el-checkbox>
-        <div class="login-btn">
-          <el-button type="primary" @click="submitForm('ruleForm')"
-            >登录</el-button
-          >
-          <el-button @click="resetForm('ruleForm')">重置</el-button>
+  <div class="app-login">
+    <el-container>
+      <el-header>
+        <span>企业管理系统</span>
+      </el-header>
+      <el-main>
+        <el-card class="box-card">
+        <div slot="header" class="clearfix">
+          <span>登录</span>
         </div>
-      </el-form>
-    </div>
+        <el-form :model="result" :rules="rulesForm" ref="thisForm">
+            <el-form-item label="" prop="username">
+                <el-input
+                  prefix-icon="el-icon-user"
+                  v-model="result.username"
+                  placeholder="请输入手机号"
+                  auto-complete="off">
+                </el-input>
+            </el-form-item>
+            <el-form-item prop="password">
+              <el-input
+                prefix-icon="el-icon-unlock"
+                :type="passwordVisible"
+                v-model="result.password"
+                placeholder="请输入密码"
+                auto-complete="new-password">
+                <i slot="suffix" :class="icon" @click="showPass"></i>
+              </el-input>
+            </el-form-item>
+            <el-form-item prop="captcha">
+              <el-input
+                prefix-icon="el-icon-mobile-phone"
+                type="text"
+                placeholder="点击图片更换验证码"
+                v-model="result.captcha"
+                class="vertify_code"
+                maxlength="4"
+                auto-complete="false">
+              </el-input>
+                <!-- 后端提供验证码图片方式 -->
+                <!-- <span class="code">验证码</span> -->
+                <img :src="imgUrl" @click="resetImg" class="vertify_img" />
+
+                <!-- 验证码组件 前端生成图片方式，后端提供数字 -->
+                <!-- <div class="login-code" @click="refreshCode">
+                <s-identify :identifyCode="identifyCode"></s-identify>
+                </div> -->
+            </el-form-item>
+            <el-form-item prop="checked">
+              <el-checkbox v-model="result.checked" class="remeber_me">记住我</el-checkbox>
+            </el-form-item>
+            <div style="text-align: center;">
+              <el-button type="primary" @click="submitForm('thisForm')">登 录</el-button>
+              <el-button @click="resetForm('thisForm')">重 置</el-button>
+            </div>
+        </el-form>
+      </el-card>
+      </el-main>
+    </el-container>
+      
   </div>
 </template>
 
 <script>
 // import { mixin } from "../mixins/index";
 // import { getLoginStatus } from "../api/index";
-import SIdentify from '@/components/captcha'
+// import SIdentify from '@/components/captcha'
+import baseUrl from '@/api/baseUrl'
+import { mapActions } from 'vuex'
 
 export default {
-  components: { SIdentify },
+  name: 'app-login',
+  // components: { SIdentify },
   data: function () {
     return {
-      identifyCode: '3x81',
-      checked: false,
+      identifyCode: '3528',
       passwordVisible: 'password',
-      icon: 'el-icon-view',
-      imgUrl: 'http://localhost:8888/verifyCode?time=' + new Date(),
-      ruleForm: {
+      icon: 'lee-icon-biyan',
+      imgUrl: baseUrl + '/index/verify?' + new Date().getTime(),
+      result: {
+        checked: false,
         username: '',
         password: '',
-        code: ''
+        captcha: ''
       },
-      rules: {
+      rulesForm: {
         username: [
-          // required：规则，trigger：失去焦点触发
-          { required: true, message: '请输入用户名', trigger: 'blur' }
+          { required: true, message: '请输入手机号', trigger: 'blur' },
+          {
+            validator: (rule, value, callback) => {
+              if (!/^[1][3,4,5,7,8,9][0-9]{9}$/.test(value)) {
+              // 如果callback(new Error('错误要提示的信息'))代表验证不通过
+                return callback(new Error('请填写正确的手机号码'))
+              }
+              // 如果callback()代表验证通过
+              return callback()
+            },
+            trigger: 'change'
+          }
         ],
-        password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
-        code: [{ required: true, message: '请输入验证码', trigger: 'blur' }]
+        password: [
+          { required: true, message: '请输入密码', trigger: 'blur' },
+          { min: 6, max: 15, message: '密码长度在 6 到 15 个字符之间', trigger: 'blur' }
+        ],
+        captcha: [
+          { required: true, message: '请输入验证码', trigger: 'blur' },
+          { len: 4, message: '请输入正在的验证码', trigger: 'change' }
+        ]
       }
     }
   },
   mounted () {
-    // this.account() // 获取cookie的方法
+    this.account() // 获取cookie的方法
+    console.log('redirect => ', this.$route.query.redirect)
   },
   methods: {
+    ...mapActions([
+      'LoginByUsername'
+    ]),
     account () {
-      console.log(this.getCookie('username'))
-      this.ruleForm.username = this.getCookie('username')
-      this.ruleForm.password = this.getCookie('password')
-    },
-    // setCookie (c_name, c_pwd, exdate) {
-    //   // 账号，密码 ，过期的天数
-    //   var exdate = new Date()
-    //   exdate.setTime(exdate.getTime() + 24 * 60 * 60 * 1000 * exdate) // 保存的天数
-    //   document.cookie =
-    //     'username=' + c_name + ';path=/;expires=' + exdate.toLocaleString()
-    //   document.cookie =
-    //     'password=' + c_pwd + ';path=/;expires=' + exdate.toLocaleString()
-    // },
-    getCookie (name) {
-      var arr = document.cookie.split(';')
-      for (var i = 0; i < arr.length; i++) {
-        var arr2 = arr[i].split('=')
-        if (arr2[0].trim() === name) {
-          return arr2[1]
-        }
+      let _memberMe = this.$cookie.get('memberMe')
+      if (_memberMe) {
+        let _j = JSON.parse(_memberMe)
+        console.log(_j)
+        this.result.username = _j.u
+        this.result.password = _j.p
+        this.result.checked = _j.c
       }
     },
     clearCookie () {
-    //   this.setCookie('', '', -1) // 清除cookie
+      this.$cookie.delete('memberMe') // 清除cookie
     },
-
     // 方法
     submitForm (formName) {
       this.$refs[formName].validate((valid) => {
-        // if (valid) {
-        //   // 取参数
-        //   let params = new URLSearchParams()
-        //   params.append('name', this.ruleForm.username)
-        //   params.append('password', this.ruleForm.password)
-        //   params.append('code', this.ruleForm.code)
-        //   if (this.checked == true) {
-        //     // 存入cookie
-        //     this.setCookie(this.ruleForm.username, this.ruleForm.password, 7) // 保存7天
-        //   } else {
-        //     this.clearCookie()
-        //   }
-
-        // 调用方法提交
-        //   getLoginStatus(params).then((res) => {
-        //     if (res.code == 1) {
-        //       localStorage.setItem('userName', this.ruleForm.username)
-        //       this.$router.push('/Info')
-        //       this.notify('登录成功', 'success')
-        //     }
-        //     if (res.code == 0) {
-        //       this.notify('验证码错误', 'error')
-        //     }
-        //     if (res.code == 2) {
-        //       this.notify('用户名或密码错误', 'error')
-        //     }
-        //   })
-        // } else {
-        //   return false
-        // }
+        if (valid) {
+          // 取参数
+          if (this.result.checked === true) {
+            // 存入cookie 保存7天
+            let memberMe = {
+              u: this.result.username,
+              p: this.result.password,
+              c: true
+            }
+            this.$cookie.set('memberMe', JSON.stringify(memberMe), 1)
+          } else {
+            this.clearCookie()
+          }
+          // this.$cookie.set('i-token', 'xxxsina', {expires: '10s'})
+          // this.$router.push('/')
+          this.LoginByUsername(this.result).then((res) => {
+            console.log('====login page=====')
+            console.log(res)
+            console.log('====login page end =====')
+          }).catch(err => {
+            console.log('====login page error=====')
+            console.log(err.data)
+          })
+          // 调用方法提交
+          // getLoginStatus(params).then((res) => {
+          //   if (res.code == 1) {
+          //     localStorage.setItem('userName', this.ruleForm.username)
+          //     this.$router.push('/Info')
+          //     this.notify('登录成功', 'success')
+          //   }
+          //   if (res.code == 0) {
+          //     this.notify('验证码错误', 'error')
+          //   }
+          //   if (res.code == 2) {
+          //     this.notify('用户名或密码错误', 'error')
+          //   }
+          // })
+        } else {
+          return false
+        }
       })
     },
     // 点击图片更换验证码
     resetImg () {
-      this.identifyCode = '93d2'
-    //   this.imgUrl = 'http://localhost:8888/verifyCode?time=' + new Date()
+      this.imgUrl = baseUrl + '/index/verify?' + new Date().getTime()
     },
+    // 这里是验证码第二种方法要用的函数，和 refreshCode() 一起
     randomNum (min, max) {
       return Math.floor(Math.random() * (max - min) + min)
     },
@@ -162,74 +189,51 @@ export default {
     },
     // 重置
     resetForm (formName) {
-    //   this.$refs[formName].resetFields()
+      this.$refs[formName].resetFields()
     },
+    // 显示或者不显密码
     showPass () {
-    //   if (this.passwordVisible === 'text') {
-    //     this.passwordVisible = 'password'
-    //     // 更换图标
-    //     this.icon = 'el-icon-view'
-    //   } else {
-    //     this.passwordVisible = 'text'
-    //     this.icon = 'el-icon-lock'
-    //   }
+      if (this.passwordVisible !== 'text') {
+        this.passwordVisible = 'text'
+        // 更换图标 view
+        this.icon = 'el-icon-view'
+      } else {
+        this.passwordVisible = 'password'
+        this.icon = 'lee-icon-biyan'
+      }
     }
   }
 }
 </script>
 
 <style scoped>
-.login-wrap {
-  position: relative;
-  /* background: url("../assets/img/background1.jpg"); */
-  background-attachment: fixed;
-  background-position: center;
-  background-size: cover;
-  width: 100%;
-  height: 100%;
+.el-icon-view, .lee-icon-biyan {
+  cursor: pointer;
 }
-.ms-title {
-  position: absolute;
-  top: 50%;
+.app-login {
+  height: 100%;
+  background-color: #f1f4f6;
+}
+.el-header {
+  background-color: #30bc9b;
   width: 100%;
-  margin-top: -230px;
-  text-align: center;
-  font-size: 30px;
-  font-weight: 600;
+  line-height: 60px;
+  padding-left: 30px;
+  text-align: left;
   color: #fff;
 }
-.ms-login {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 300px;
-  height: 260px;
-  margin-left: -190px;
-  margin-top: -150px;
-  padding: 40px;
+.el-main {
+  margin: 0 auto;
+  margin-top: 60px;
+}
+.box-card {
+  width: 330px;
+  height: 330px;
   border-radius: 5px;
-  /* 调整透明度 */
   opacity: 0.9;
-  filter: alpha(opacity=90);
+  filter: alpha(opacity=9);
   background: #fff;
 }
-.login-btn {
-  text-align: center;
-}
-.login-btn button {
-  /* width: 100%; */
-  height: 36px;
-}
-
-.form {
-  position: relative;
-}
-
-.remeberMe {
-  text-align: left;
-  margin: 0 0 15px 0;
-}
-
 .vertify_code {
   width: 180px;
 }
@@ -238,5 +242,14 @@ export default {
   right: 0;
   bottom: 0;
   width: 110px;
+  height: 32px;
+  cursor: pointer;
+  border-radius: 0px 2px 2px 0px;
+}
+.el-input--small >>> .el-input__inner {
+  border-radius: 2px;
+}
+.vertify_code >>> .el-input__inner {
+  border-radius: 2px 0px 0px 2px;
 }
 </style>

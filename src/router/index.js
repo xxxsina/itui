@@ -16,22 +16,26 @@ const router = new Router({
     },
     {
       path: '/',
-      name: 'main',
-      meta: {
-        requireAuth: false,
-        crumb: [
-          {title: '控制台'}
-        ]
-      },
-      components: {
-        default: () => import('@/views/main'),
-        content: () => import('@/views/index/home')
-      },
+      component: () => import('@/views/main'),
       children: [
+        {
+          path: '/',
+          name: 'main',
+          meta: {
+            requireAuth: false,
+            crumb: [
+              {title: '控制台'}
+            ]
+          },
+          components: {
+            content: () => import('@/views/index/home')
+          }
+        },
         {
           path: '/system/hosts',
           name: 'hosts',
           meta: {
+            requireAuth: true,
             crumb: [
               {title: '系统管理'},
               {title: '短域名配置'}
@@ -45,6 +49,7 @@ const router = new Router({
           path: '/system/vip',
           name: 'vip',
           meta: {
+            requireAuth: true,
             crumb: [
               {title: '系统管理'},
               {title: 'VIP配置'}
@@ -58,6 +63,7 @@ const router = new Router({
           path: '/auth/rule',
           name: 'rule',
           meta: {
+            requireAuth: true,
             crumb: [
               {title: '权限管理'},
               {title: '菜单规则'}
@@ -71,6 +77,7 @@ const router = new Router({
           path: '/auth/group',
           name: 'group',
           meta: {
+            requireAuth: true,
             crumb: [
               {title: '权限管理'},
               {title: '角色组'}
@@ -84,6 +91,7 @@ const router = new Router({
           path: '/auth/admin',
           name: 'admin',
           meta: {
+            requireAuth: true,
             crumb: [
               {title: '权限管理'},
               {title: '管理员'}
@@ -97,6 +105,7 @@ const router = new Router({
           path: '/member/user',
           name: 'user',
           meta: {
+            requireAuth: true,
             crumb: [
               {title: '用户管理'},
               {title: '用户列表'}
@@ -110,6 +119,7 @@ const router = new Router({
           path: '/member/userlog',
           name: 'userlog',
           meta: {
+            requireAuth: true,
             crumb: [
               {title: '用户管理'},
               {title: '用户日志'}
@@ -123,6 +133,7 @@ const router = new Router({
           path: '/codes/jump',
           name: 'jump',
           meta: {
+            requireAuth: true,
             crumb: [
               {title: '活码管理'},
               {title: '连接活码'}
@@ -136,6 +147,7 @@ const router = new Router({
           path: '/codes/jump/:parent_id',
           name: 'jump/channel',
           meta: {
+            requireAuth: true,
             crumb: [
               {title: '活码管理'},
               {title: '连接活码'},
@@ -151,6 +163,7 @@ const router = new Router({
           path: '/codes/qrcode',
           name: 'qrcode',
           meta: {
+            requireAuth: true,
             crumb: [
               {title: '活码管理'},
               {title: '二维码活码'}
@@ -164,6 +177,7 @@ const router = new Router({
           path: '/codes/qrcode/:parent_id',
           name: 'qrcode/channel',
           meta: {
+            requireAuth: true,
             crumb: [
               {title: '活码管理'},
               {title: '二维码活码'},
@@ -179,6 +193,7 @@ const router = new Router({
           path: '/codes/invite',
           name: 'invite',
           meta: {
+            requireAuth: true,
             crumb: [
               {title: '活码管理'},
               {title: '口令活码'}
@@ -192,6 +207,7 @@ const router = new Router({
           path: '/codes/invite/:parent_id',
           name: 'invite/channel',
           meta: {
+            requireAuth: true,
             crumb: [
               {title: '活码管理'},
               {title: '口令活码'},
@@ -207,6 +223,7 @@ const router = new Router({
           path: '/sheet',
           name: 'sheet',
           meta: {
+            requireAuth: true,
             crumb: [
               {title: '表单管理'}
             ]
@@ -219,6 +236,7 @@ const router = new Router({
           path: '/sheet/:parent_id',
           name: 'sheet/list',
           meta: {
+            requireAuth: true,
             crumb: [
               {title: '表单'},
               {title: '数据列表'}
@@ -233,7 +251,7 @@ const router = new Router({
           path: '/shorturl',
           name: 'shorturl',
           meta: {
-            requireAuth: false,
+            requireAuth: true,
             crumb: [
               {title: '短连接'}
             ]
@@ -249,9 +267,10 @@ const router = new Router({
 
 // 路由跳转之前判断
 router.beforeEach((to, from, next) => {
-  console.log(to)
+  // console.log(to)
   if (to.meta.requireAuth) {
-    const token = VueCookie.get('token')
+    const token = VueCookie.get('i-token')
+    console.log('i-token => ', token)
     if (typeof token !== 'string' || !token) {
       return next({
         path: '/login',

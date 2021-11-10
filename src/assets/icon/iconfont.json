@@ -1,0 +1,30 @@
+{
+  "id": "2866663",
+  "name": "object-1",
+  "font_family": "iconfont",
+  "css_prefix_text": "lee-icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "11494970",
+      "name": "闭眼",
+      "font_class": "biyan",
+      "unicode": "e65d",
+      "unicode_decimal": 58973
+    },
+    {
+      "icon_id": "24916975",
+      "name": "二维码",
+      "font_class": "-erweima",
+      "unicode": "e72d",
+      "unicode_decimal": 59181
+    },
+    {
+      "icon_id": "24916818",
+      "name": "多人",
+      "font_class": "-duoren",
+      "unicode": "e721",
+      "unicode_decimal": 59169
+    }
+  ]
+}

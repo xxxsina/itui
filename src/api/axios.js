@@ -9,6 +9,7 @@ import { getToken } from '@/utils/auth'
 
 // 创建 axios 实例
 let service = axios.create({
+  withCredentials: true,
   timeout: 500
 })
 
@@ -19,22 +20,25 @@ service.defaults.headers.post['Content-Type'] = 'application/json'
 // 添加请求拦截器
 service.interceptors.request.use(
   (config) => {
-    // if (config.method === 'post' || config.method === 'put') {
+    if (config.method === 'post' || config.method === 'put') {
     //   // post、put 提交时，将对象转换为string, 为处理Java后台解析问题
-    //   config.data = JSON.stringify(config.data)
-    // }
+      config.data = JSON.stringify(config.data)
+    }
+    console.log('=================')
+    console.log(config)
+    console.log('=================')
     // 请求发送前进行处理
     // console.log(store.getters.token)
     // header x-token
-    if (store.getters.token) {
-      config.headers['token'] = getToken()
-    } else {
-      // eslint-disable-next-line no-undef
-      let token = VueCookie.get('token')
-      config.headers.token = token
-    }
-    let companycode = VueCookie.get('companycode')
-    config.headers.companycode = companycode || 'k9monpgAzv2zNJKZYdOy'
+    // if (store.getters.token) {
+    //   config.headers['token'] = getToken()
+    // } else {
+    //   // eslint-disable-next-line no-undef
+    //   let token = VueCookie.get('token')
+    //   config.headers.token = token
+    // }
+    // let companycode = VueCookie.get('companycode')
+    // config.headers.companycode = companycode || 'k9monpgAzv2zNJKZYdOy'
     return config
   },
   (error) => {

@@ -35,12 +35,16 @@ const user = {
     LoginByUsername ({ commit }, userInfo) {
       const username = userInfo.username.trim()
       return new Promise((resolve, reject) => {
-        loginByUsername(username, userInfo.password).then(response => {
+        loginByUsername(username, userInfo.password, userInfo.captcha).then(response => {
           const data = response.data
+          console.log(response)
+          console.log(data)
           commit('SET_TOKEN', data.token)
           setToken(data.token)
           resolve()
         }).catch(error => {
+          console.log('error ===> ')
+          console.log(error)
           reject(error)
         })
       })

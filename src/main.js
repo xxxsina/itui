@@ -4,15 +4,15 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
-import G from './assets/js/g'
+import G from './utils/g'
 import store from './store/index' // 引入vuex-store
 import axios from 'axios'
 import cookie from 'vue-cookie'
 import api from './api/install'
 import Fragment from 'vue-fragment'
-
 // 导入element-ui
 import ElementUI from 'element-ui'
+import './assets/icon/iconfont.css'
 import 'element-ui/lib/theme-chalk/index.css'
 
 Vue.prototype.$axios = axios

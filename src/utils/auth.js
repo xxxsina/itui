@@ -1,15 +1,15 @@
 import Cookies from 'vue-cookie'
 
-const XTokenKey = 'X-Token'
+const iTokenKey = 'i-token'
 
 export function getToken () {
-  return Cookies.get(XTokenKey)
+  return Cookies.get(iTokenKey)
 }
 
 export function setToken (token) {
-  return Cookies.set(XTokenKey, token)
+  return Cookies.set(iTokenKey, token)
 }
 
 export function removeToken () {
-  return Cookies.delete(XTokenKey)
+  return Cookies.delete(iTokenKey)
 }
