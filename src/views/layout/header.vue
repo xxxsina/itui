@@ -46,7 +46,7 @@
                                         </el-link>
                                     </el-col>
                                     <el-col :span="8" :offset="5">
-                                        <el-link :underline=false class="cls-col-a2" href="/">
+                                        <el-link :underline=false class="cls-col-a2" @click="signOut">
                                             <i class="el-icon-error"></i>
                                             退出登录
                                         </el-link>
@@ -62,6 +62,8 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex'
+
 export default {
   name: 'app-header',
   props: ['data'],
@@ -69,6 +71,9 @@ export default {
     this.getClientWidth()
   },
   methods: {
+    ...mapActions([
+      'logout'
+    ]),
     errorHandler () {
       return true
     },
@@ -78,6 +83,13 @@ export default {
     },
     getClientWidth () {
       this.clientWidth = this.$refs.baseApp.clientWidth
+    },
+    signOut () {
+      this.logout().then((res) => {
+        this.$router.push('/login')
+      }).catch(() => {
+        this.$router.push('/login')
+      })
     }
   },
   data () {

@@ -1,20 +1,20 @@
-import apiList from './apiList'
+// import apiList from './apiList'
 
-const install = function (Vue) {
-  if (install.installed) {
-    return
-  }
+// const install = function (Vue) {
+//   if (install.installed) {
+//     return
+//   }
 
-  install.installed = true
-  Object.defineProperties(Vue.prototype, {
-    $api: {
-      get () {
-        return apiList
-      }
-    }
-  })
-}
+//   install.installed = true
+//   Object.defineProperties(Vue.prototype, {
+//     $api: {
+//       get () {
+//         return apiList
+//       }
+//     }
+//   })
+// }
 
-export default {
-  install
-}
+// export default {
+//   install
+// }

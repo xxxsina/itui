@@ -3,6 +3,9 @@
     <el-container class="cls-container cls-container-op">
       <el-col style="white-space: nowrap;">
         <el-form :model="search" :rules="rulesSearch" ref="searchForm" :inline="true">
+          <el-button type="success" @click="reload" style="padding: 9px 12px;" title="刷新">
+            <i class="el-icon-refresh"></i>
+          </el-button>
           <el-button type="primary" @click="showDialogTool()" style="padding: 9px 12px;">
             <i class="el-icon-plus"></i>
             添加
@@ -10,20 +13,26 @@
           <el-form-item prop="content">
             <el-input v-model="search.content" clearable placeholder="账号或者昵称"></el-input>
           </el-form-item>
-            <el-button icon="el-icon-search" round @click="submitSearchForm('searchForm')"></el-button>
+            <el-button icon="el-icon-search" round @click="getList"></el-button>
         </el-form>
       </el-col>
     </el-container>
     <el-container class="cls-container cls-container-tab">
       <el-table
-        :data="tableData"
+        ref="multipleTable"
+        :data="data.list"
         row-key="id"
         border
         default-expand-all
+        @selection-change="handleSelectionChange"
         :cell-style="{padding:'0px'}"
         :row-style="{height:'34px'}"
         :tree-props="{children: 'childs'}"
         style="width: 100%">
+        <el-table-column
+          type="selection"
+          width="55">
+        </el-table-column>
         <el-table-column
           align="center"
           prop="id"
@@ -45,7 +54,7 @@
         <el-table-column
           align="center"
           prop="group_name"
-          label="权限组"
+          label="所属权限组"
           width="220">
         </el-table-column>
         <el-table-column
@@ -58,21 +67,21 @@
               v-model="scope.row.status"
               :value="scope.row.status"
               :active-value="1"
-              :inactive-value="2"
-              @change="setIsMenu({'status': $event, 'id': scope.row.id})"
+              :inactive-value="0"
+              @change="handleEditStatus(scope.$index, scope.row)"
               active-color="#13ce66">
             </el-switch>
           </template>
         </el-table-column>
         <el-table-column
           align="center"
-          prop="ip"
+          prop="loginip"
           label="登录IP地址"
           width="200">
         </el-table-column>
         <el-table-column
           align="center"
-          prop="lastlogintime"
+          prop="logintime"
           label="最后登录时间"
           width="300">
         </el-table-column>
@@ -86,7 +95,7 @@
               type='primary'
               size="mini"
               icon="el-icon-edit"
-              @click="handleEdit(scope.$index, scope.row)"></el-button>
+              @click="handleEditPop(scope.$index, scope.row)"></el-button>
               <el-popconfirm
               confirm-button-text='确定'
               cancel-button-text='不用了'
@@ -106,15 +115,25 @@
       </el-table>
     </el-container>
     <el-container class="cls-container cls-container-page">
+      <el-col :sm="4" style="text-align:left;">
+        <el-popconfirm
+          confirm-button-text='确定'
+          cancel-button-text='不用了'
+          icon="el-icon-info"
+          icon-color="red"
+          title="你确定要删除该条内容吗？"
+          @confirm="handleDeleteBatch()">
+            <el-button slot="reference" type="danger">批量删除</el-button>
+          </el-popconfirm>
+      </el-col>
       <el-col>
         <el-pagination
           background
-          @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
-          :current-page.sync="currentPage"
-          :page-size="100"
+          :current-page.sync="data.page"
+          :page-size="data.limit"
           layout="total, prev, pager, next"
-          :total="999">
+          :total="data.total">
         </el-pagination>
       </el-col>
     </el-container>
@@ -137,7 +156,10 @@ export default {
   components: {
     'el-lee-edit': edit
   },
+  inject: ['reload'],
   mounted () {
+    // 绑定数据
+    this.getList()
   },
   computed: {
     // eslint-disable-next-line no-undef
@@ -147,17 +169,34 @@ export default {
   },
   methods: {
     ...mapActions([
-      'setIsMenu'
+      'getAdminList',
+      'editAdmin',
+      'delAdmin'
     ]),
     cancel () {
       // console.log('我是爸爸')
       this.$refs.thisForm.reset()
     },
-    // handler
-    handler (row) {
-      // console.log(row)
-      this.drawer = true
-      this.name = row.title
+    // 批量选中
+    handleSelectionChange (row) {
+      this.multipleSelection = row
+    },
+    // 批量删除
+    handleDeleteBatch () {
+      if (this.multipleSelection.length) {
+        let ids = []
+        this.multipleSelection.forEach(row => {
+          ids.push(row.id)
+        })
+        this.delAdmin({
+          ids: ids
+        }).then((res) => {
+          this.$message.success(res.msg)
+          this.reload() // 局部刷新
+        })
+      } else {
+        this.$message.error('请选择要删除的数据')
+      }
     },
     // 显示表单
     showDialogTool () {
@@ -165,7 +204,7 @@ export default {
       this.$refs.dialogTool.showDialog()
     },
     // 编辑事件，触发后直接提取column数据传到dialog
-    handleEdit (index, column) {
+    handleEditPop (index, column) {
       this.dialogToolDataDefault.title = '修改'
       // 显示dialog
       this.$refs.dialogTool.showDialog()
@@ -176,90 +215,67 @@ export default {
       // 重试set表单的值，Object.assign这个是相当于重置对象里面所有项
       // Object.assign(this.result, resultNew)
     },
+    // 修改状态
+    handleEditStatus (index, column) {
+      this.editAdmin({
+        id: column.id,
+        username: column.username,
+        group_id: column.group_id,
+        status: column.status
+      }).then((res) => {
+        this.$message.success(res.msg)
+      })
+    },
     // 删除事件
     handleDelete (index, column) {
-      console.log(index)
-      console.log(column)
-    },
-    // search form提交方法
-    submitSearchForm (formName) {
-      this.$refs[formName]
-        .validate()
-        .then(res => {
-          console.log(this.search)
-          // this.fresh()
+      // console.log(column.id)
+      if (column.id === 1) {
+        this.$message.error('无操作权限')
+      } else {
+        this.delAdmin({
+          ids: column.id
+        }).then((res) => {
+          this.$message.success(res.msg)
+          this.reload() // 局部刷新
         })
-        // eslint-disable-next-line handle-callback-err
-        .catch(err => {
-          console.log(err)
-          console.log('error submit!!')
-        })
-    },
-    async getLogin () {
-      let _data = {
-        'username': '20190901006',
-        'password': '423423',
-        'page': this.page
       }
-      let params = {
-        type: 'npcxxxx'
-      }
-      console.log('xxxxxxx start xxxxxxxx')
-      // eslint-disable-next-line no-undef
-      // let rs = this.$cookie.set('token', '3333')
-      // console.log(rs)
-      try {
-        let res = await this.$api.matches.login(_data, params)
-        this.$message.success(res.message)
-        if (res.data) {
-          this.$cookie.set('token', res.data.token, { expires: '10s' })
-        }
-      } catch (e) {
-        console.log('​catch -> e', e)
-      }
-      console.log('xxxxxxx end xxxxxxxx')
     },
-    handleSizeChange (val) {
-      console.log(`每页 ${val} 条`)
+    // 翻页
+    handleCurrentChange (page) {
+      this.getList()
     },
-    handleCurrentChange (val) {
-      console.log(`当前页: ${val}`)
-      this.currentPage = val
-      // this.getDataText()
+    // 请求数据统一调用方法
+    getList () {
+      this.getAdminList({
+        search: this.search,
+        page: this.data.page
+      }).then((res) => {
+        this.data = res.data
+      })
     }
   },
   data () {
     return {
       drawer: false,
-      name: '',
-      currentPage: 1,
+      data: {
+        page: 1,
+        limit: 1,
+        total: 0,
+        list: []
+      },
       search: {},
+      multipleSelection: [],
       result: {
         id: 'add',
         username: '',
         nickname: '',
         group_id: '',
-        group_name: '',
-        status: 1,
-        ip: '',
-        lastlogintime: ''
+        status: 1
       },
       dialogToolDataDefault: {
         title: '添加',
         visible: false
       },
-      tableData: [
-        {
-          id: '1',
-          username: '13880789545',
-          nickname: 'xxxsina',
-          group_id: '2',
-          group_name: '超级管理员',
-          status: 2,
-          ip: '127.0.0.1',
-          lastlogintime: '2021-11-01 14:53:03'
-        }
-      ],
       rulesSearch: {
         content: [
           { required: true, message: '请填写查询内容', trigger: 'change' },

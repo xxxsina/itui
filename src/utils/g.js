@@ -4,6 +4,7 @@ export default {
   hostName: '爱推360',
   menu: '',
   fold: false,
+  cookie_time: '60s',
   drawerSizeDefault: '40%', // 默认抽屉是40%覆盖
   drawerSizeMobile: '100%', // 手机访问100%覆盖
   formWidthDefault: '14%', // 默认表单是14%覆盖

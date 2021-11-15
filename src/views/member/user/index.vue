@@ -157,26 +157,6 @@
 </template>
 
 <style scoped>
-/* .cls-draw >>> header {
-    background-color: #2c3e50;
-    line-height: 50px;
-    padding: 0 20px;
-    color: white;
-}
-.cls-draw-desc {
-    margin: 0  10px;
-}
-.el-button {
-    margin-left: unset;
-}
-.cls-draw >>> .cls-tb-label {
-    background: #E1F3D8;
-    font-weight: bold;
-}
-.cls-draw >>> .cls-tb-content {
-    background: #FDE2E2;
-    font-weight: bold;
-} */
 </style>
 
 <script>

@@ -18,15 +18,24 @@
         <dialogTool ref="dialogTool" :data='dialogToolDataDefault'>
           <xxx ref="thisForm" slot="slotEditForm" :result='result' :data='dialogToolDataDefault'></xxx>
         </dialogTool>
+        {{ token }}
+        {{ admin.id }}
     </div>
 </template>
 
 <script>
 import xxx from './form'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'home',
   components: {xxx},
+  computed: {
+    ...mapGetters([
+      'token',
+      'admin'
+    ])
+  },
   methods: {
     // vuex 例子讲解
     clickVuex () {

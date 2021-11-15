@@ -1,14 +1,19 @@
 <template>
   <div class="app-auth-rule">
     <el-container class="cls-container cls-container-op">
-      <el-button type="primary" @click="showDialogTool()" style="padding: 9px 12px;">
-        <i class="el-icon-plus"></i>
-        添加
-      </el-button>
+      <el-col style="white-space: nowrap;">
+        <el-button type="success" @click="reload" style="padding: 9px 12px;" title="刷新">
+          <i class="el-icon-refresh"></i>
+        </el-button>
+        <el-button type="primary" @click="showDialogTool()" style="padding: 9px 12px;">
+          <i class="el-icon-plus"></i>
+          添加
+        </el-button>
+      </el-col>
     </el-container>
     <el-container class="cls-container cls-container-tab">
       <el-table
-        :data="menus"
+        :data="data.list"
         row-key="id"
         border
         default-expand-all
@@ -24,9 +29,9 @@
         </el-table-column>
         <el-table-column
           align="center"
-          prop="title"
+          prop="name"
           label="标题"
-          width="300">
+          width="200">
         </el-table-column>
         <el-table-column
           align="center"
@@ -37,9 +42,9 @@
         </el-table-column>
         <el-table-column
           align="center"
-          prop="rulelink"
+          prop="rule"
           label="规则"
-          width="500">
+          width="300">
         </el-table-column>
         <el-table-column
           align="center"
@@ -53,8 +58,8 @@
           label="状态"
           width="100">
           <template slot-scope="scope">
-            <el-col v-if="scope.row.status == 1" style="color: #67C23A">正常</el-col>
-            <el-col v-else style="color: #909399">隐藏</el-col>
+            <el-tag size="small" type="success" v-if="scope.row.status==1">正常</el-tag>
+            <el-tag size="small" type="danger" v-else>隐藏</el-tag>
           </template>
         </el-table-column>
         <el-table-column
@@ -67,11 +72,23 @@
               v-model="scope.row.ismenu"
               :value="scope.row.ismenu"
               :active-value="1"
-              :inactive-value="2"
-              @change="setIsMenu({'ismenu': $event, 'id': scope.row.id})"
+              :inactive-value="0"
+              @change="ismenuChange(scope.$index, scope.row)"
               active-color="#13ce66">
             </el-switch>
           </template>
+        </el-table-column>
+        <el-table-column
+          align="center"
+          prop="updatetime"
+          label="修改时间"
+          width="140">
+        </el-table-column>
+        <el-table-column
+          align="center"
+          prop="createtime"
+          label="创建时间"
+          width="140">
         </el-table-column>
         <el-table-column
           align="center"
@@ -102,22 +119,15 @@
         </el-table-column>
       </el-table>
     </el-container>
-    <el-container class="cls-container cls-container-page">
-      <el-col>
-        <!-- <el-pagination
-          background
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-          :current-page.sync="currentPage1"
-          :page-size="100"
-          layout="total, prev, pager, next"
-          :total="999">
-        </el-pagination> -->
-      </el-col>
-    </el-container>
 
     <dialogTool ref="dialogTool" :data='dialogToolDataDefault'>
-      <el-lee-edit ref="thisForm" slot="slotEditForm" :result='result' :data='dialogToolDataDefault'></el-lee-edit>
+      <el-lee-edit
+        ref="thisForm"
+        slot="slotEditForm"
+        :list='data.list'
+        :result='result'
+        :data='dialogToolDataDefault'>
+      </el-lee-edit>
     </dialogTool>
 
   </div>
@@ -135,6 +145,7 @@ export default {
   components: {
     'el-lee-edit': edit
   },
+  inject: ['reload'],
   computed: {
     // eslint-disable-next-line no-undef
     ...mapGetters([
@@ -142,11 +153,14 @@ export default {
     ])
   },
   mounted () {
-    this.menus = this.menuBar
+    // 绑定数据
+    this.getList()
   },
   methods: {
     ...mapActions([
-      'setIsMenu'
+      'getAuthRuleList',
+      'editAuthRule',
+      'delAuthRule'
     ]),
     cancel () {
       // console.log('我是爸爸')
@@ -166,102 +180,58 @@ export default {
       setTimeout(() => {
         this.$refs.thisForm.setData(column)
       })
-      // 重试set表单的值，Object.assign这个是相当于重置对象里面所有项
-      // Object.assign(this.result, resultNew)
     },
     // 删除事件
     handleDelete (index, column) {
-      console.log(index)
-      console.log(column)
+      this.delAuthRule({
+        ids: column.id
+      }).then((res) => {
+        this.$message.success(res.msg)
+        this.reload() // 局部刷新
+      })
     },
     // 改变菜单ismenu
-    ismenuChange (ismenu, id) {
-      console.log(ismenu)
-      console.log(id)
-      this.setIsMenu({id, ismenu})
-      // console.log(this.$store.state.rule.isMenu)
+    ismenuChange (index, column) {
+      this.editAuthRule({
+        id: column.id,
+        name: column.name,
+        rule: column.rule,
+        status: column.status,
+        ismenu: column.ismenu
+      }).then((res) => {
+        this.$message.success(res.msg)
+        this.reload() // 局部刷新
+      })
     },
-    // axios 示例
-    // getDataText () {
-    //   console.log('xxxxxxx start xxxxxxxx')
-    //   let _data = {
-    //     'username': '20190901006',
-    //     'password': '423423',
-    //     'page': this.page
-    //   }
-    //   let _config = {
-    //     headers: {
-    //       'X-Requested-With': 'XMLHttpRequest',
-    //       // 'token': '416b00d0ab77e8549d4883ba59c2fcaadd0d7d74a372e59fd19475be5a97da97',
-    //       'companycode': 'k9monpgAzv2zNJKZYdOy'
-    //     }
-    //   }
-    //   // eslint-disable-next-line no-undef
-    //   this.$axios.post('http://www.amcapi.sw/user/user/login', _data, _config).then(response => {
-    //     console.log(response.data)
-    //     if (response.data.success === true) {
-    //       this.$message.success(response.data.message)
-    //       // this.$message(response.data.data.username)
-    //     } else {
-    //       this.$message.error(response.data.message)
-    //     }
-    //   })
-    //   console.log('xxxxxxx end xxxxxxxx')
-    // },
-    async getLogin () {
-      let _data = {
-        'username': '20190901006',
-        'password': '423423',
-        'page': this.page
-      }
-      let params = {
-        type: 'npcxxxx'
-      }
-      console.log('xxxxxxx start xxxxxxxx')
-      // eslint-disable-next-line no-undef
-      // let rs = this.$cookie.set('token', '3333')
-      // console.log(rs)
-      try {
-        let res = await this.$api.matches.login(_data, params)
-        this.$message.success(res.message)
-        if (res.data) {
-          this.$cookie.set('token', res.data.token, { expires: '10s' })
-        }
-      } catch (e) {
-        console.log('​catch -> e', e)
-      }
-      console.log('xxxxxxx end xxxxxxxx')
-    },
-    handleSizeChange (val) {
-      console.log(`每页 ${val} 条`)
-    },
-    handleCurrentChange (val) {
-      console.log(`当前页: ${val}`)
-      this.page = val
-      // this.getDataText()
+    // 请求数据统一调用方法
+    getList () {
+      this.getAuthRuleList().then((res) => {
+        this.data = res.data
+      })
     }
   },
   data () {
     return {
-      menus: [],
-      name: '',
-      page: 1,
+      data: {
+        page: 1,
+        limit: 1,
+        total: 0,
+        list: []
+      },
       result: {
         id: 'add',
-        title: '',
-        icon: '',
-        rulelink: '',
-        weight: '',
-        ismenu: 1,
         pid: 0,
-        status: 1
+        status: 1,
+        name: '',
+        icon: '',
+        rule: '',
+        weight: '',
+        ismenu: 1
       },
       dialogToolDataDefault: {
         title: '添加',
         visible: false
-      },
-      // tableData: this.G.menu,
-      tableData: []
+      }
     }
   }
 }

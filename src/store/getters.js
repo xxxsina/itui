@@ -1,5 +1,6 @@
 const getters = {
-  token: state => state.user.token,
+  token: state => state.admin.token,
+  admin: state => state.admin.admin,
   menuBar: state => state.menuBar.data
 }
 

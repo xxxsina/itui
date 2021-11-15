@@ -22,7 +22,7 @@ const router = new Router({
           path: '/',
           name: 'main',
           meta: {
-            requireAuth: false,
+            requireAuth: true,
             crumb: [
               {title: '控制台'}
             ]
@@ -270,7 +270,7 @@ router.beforeEach((to, from, next) => {
   // console.log(to)
   if (to.meta.requireAuth) {
     const token = VueCookie.get('i-token')
-    console.log('i-token => ', token)
+    // console.log('i-token => ', token)
     if (typeof token !== 'string' || !token) {
       return next({
         path: '/login',

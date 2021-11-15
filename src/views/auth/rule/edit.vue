@@ -1,13 +1,13 @@
 <template>
     <div class="edit-form">
-        <el-form :model="result" :rules="rules" ref="thisForm" :label-width="this.G.getFormWidthSize()">
+        <el-form :model="result" :rules="rulesForm" ref="thisForm" :label-width="this.G.getFormWidthSize()">
             <el-form-item label="" prop="id" style="margin:0;">
                 <input type="hidden" :value="result.id" />
             </el-form-item>
             <el-form-item label="菜单" prop="ismenu">
                 <el-radio-group v-model="result.ismenu">
                     <el-radio :label="1">是</el-radio>
-                    <el-radio :label="2">否</el-radio>
+                    <el-radio :label="0">否</el-radio>
                 </el-radio-group>
             </el-form-item>
             <el-form-item label="父级" prop="pid">
@@ -18,14 +18,14 @@
                 :normalizer="normalizer"
                 :options="options" />
             </el-form-item>
-            <el-form-item label="规则" prop="rulelink">
-                <el-input v-model="result.rulelink" clearable placeholder="父级菜单无需匹配控制器和方法,子级菜单请使用控制器名"></el-input>
+            <el-form-item label="名称" prop="name">
+                <el-input v-model="result.name" clearable placeholder="菜单名称"></el-input>
             </el-form-item>
-            <el-form-item label="标题" prop="title">
-                <el-input v-model="result.title" clearable placeholder="菜单名称"></el-input>
+            <el-form-item label="规则" prop="rule">
+                <el-input v-model="result.rule" clearable placeholder="父级菜单无需匹配控制器和方法,子级菜单请使用控制器名"></el-input>
             </el-form-item>
             <el-form-item label="权重" prop="weight">
-                <el-input v-model="result.weight" clearable placeholder="权重即排序位子：数字越大越靠前"></el-input>
+                <el-input v-model="result.weight" clearable placeholder="权重:升序,数字越小越靠前"></el-input>
             </el-form-item>
             <el-form-item label="图标" prop="icon">
                 <el-col :span="8" class="cls-input-icon">
@@ -42,7 +42,7 @@
             <el-form-item label="状态" prop="status">
                 <el-radio-group v-model="result.status">
                     <el-radio :label="1">正常</el-radio>
-                    <el-radio :label="2">隐藏</el-radio>
+                    <el-radio :label="0">隐藏</el-radio>
                 </el-radio-group>
             </el-form-item>
         </el-form>
@@ -61,13 +61,13 @@
 </style>
 
 <script>
-
+import { mapActions } from 'vuex'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 
 export default {
   name: 'edit-form',
-  props: ['data', 'result'],
+  props: ['list', 'data', 'result'],
   components: { Treeselect },
   mounted () {
     // 挂载方法 rule select option tree
@@ -75,6 +75,9 @@ export default {
   },
   inject: ['reload'],
   methods: {
+    ...mapActions([
+      'editAuthRule'
+    ]),
     // 重置表单数据
     reset () {
       this.$refs.thisForm.resetFields()
@@ -97,7 +100,7 @@ export default {
       })
       // 重试挨个赋值，这种方式就可以不绑定父组件了
       if (row) {
-        for (let key in row) {
+        for (let key in this.result) {
           this.result[key] = row[key]
         }
       } else if (row === false && this.result.id !== 'add') {
@@ -114,32 +117,29 @@ export default {
       return this.result
     },
     // 此方法为option tree数据整理，和下面的optionTree方法配合使用递归；此插件：vue-treeselect
-    // getOptionTree (tree = []) {
-    //   let arr = []
-    //   if (tree.length !== 0) {
-    //     tree.forEach(item => {
-    //       if (item.ismenu) {
-    //         let obj = {}
-    //         obj.label = item.title
-    //         obj.id = item.id
-    //         if (item.childs && item.childs.length > 0) {
-    //           obj.children = this.getOptionTree(item.childs)
-    //         }
-    //         arr.push(obj)
-    //       }
-    //     })
-    //   }
-    //   return arr
-    // },
+    getOptionTree (tree = []) {
+      let arr = []
+      if (tree.length !== 0) {
+        tree.forEach(item => {
+          if (item.ismenu) {
+            let obj = {}
+            obj.name = item.name
+            obj.id = item.id
+            if (item.childs && item.childs.length > 0) {
+              obj.childs = this.getOptionTree(item.childs)
+            }
+            arr.push(obj)
+          }
+        })
+      }
+      return arr
+    },
     // 挂载方法
     optionTree () {
-      // console.log(this.G.menu)
-      // this.options = this.G.menu
       this.options = [{
         id: 0,
-        title: '无'
-      // }].concat(this.getOptionTree(this.G.menu))
-      }].concat(this.G.menu)
+        name: '无'
+      }].concat(this.getOptionTree(this.list))
     },
     // 数据key的name不匹配 就用这个来纠正
     normalizer (node) {
@@ -150,7 +150,7 @@ export default {
       return {
         id: node.id,
         // 将name转换成必填的label键
-        label: node.title,
+        label: node.name,
         children: node.childs
       }
     },
@@ -162,13 +162,13 @@ export default {
       this.$refs[formName]
         .validate()
         .then(res => {
-          console.log(this.result)
-          this.fresh()
-        })
-        // eslint-disable-next-line handle-callback-err
-        .catch(err => {
-          console.log(err)
-          console.log('error submit!!')
+          // 提交接口
+          this.editAuthRule(this.result).then((res) => {
+            this.$message.success(res.msg)
+            this.fresh() // 局部刷新
+          }).catch(() => {
+            this.fresh()
+          })
         })
     }
   },
@@ -181,17 +181,14 @@ export default {
       },
       options: [],
       // 表单验证规则
-      rules: {
+      rulesForm: {
         ismenu: [
           { required: true, message: '请选择菜单', trigger: 'change' }
         ],
-        rulelink: [
+        rule: [
           { required: true, message: '请输入规则', trigger: 'change' }
         ],
-        // pid: [
-        //   { required: true, message: '请选择父级', trigger: 'change' }
-        // ],
-        title: [
+        name: [
           { required: true, message: '请选择标题', trigger: 'change' },
           { min: 1, max: 15, message: '长度在 1 到 15 个字符', trigger: 'blur' }
         ],

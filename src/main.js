@@ -15,6 +15,7 @@ import ElementUI from 'element-ui'
 import './assets/icon/iconfont.css'
 import 'element-ui/lib/theme-chalk/index.css'
 
+// axios.defaults.withCredentials = true
 Vue.prototype.$axios = axios
 Vue.prototype.$cookie = cookie
 Vue.prototype.G = G

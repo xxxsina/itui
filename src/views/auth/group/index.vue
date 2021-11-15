@@ -1,14 +1,19 @@
 <template>
   <div class="app-auth-group">
     <el-container class="cls-container cls-container-op">
-      <el-button type="primary" @click="showDialogTool()" style="padding: 9px 12px;">
-        <i class="el-icon-plus"></i>
-        添加
-      </el-button>
+      <el-col style="white-space: nowrap;">
+        <el-button type="success" @click="reload" style="padding: 9px 12px;" title="刷新">
+          <i class="el-icon-refresh"></i>
+        </el-button>
+        <el-button type="primary" @click="showDialogTool()" style="padding: 9px 12px;">
+          <i class="el-icon-plus"></i>
+          添加
+        </el-button>
+      </el-col>
     </el-container>
     <el-container class="cls-container cls-container-tab">
       <el-table
-        :data="tableData"
+        :data="data.list"
         row-key="id"
         border
         default-expand-all
@@ -34,13 +39,25 @@
           label="状态"
           width="100">
           <template slot-scope="scope">
-            <el-col v-if="scope.row.status == 1" style="color: #67C23A">正常</el-col>
-            <el-col v-else style="color: #909399">隐藏</el-col>
+            <el-switch
+              v-model="scope.row.status"
+              :value="scope.row.status"
+              :active-value="1"
+              :inactive-value="0"
+              @change="handleEditStatus(scope.$index, scope.row)"
+              active-color="#13ce66">
+            </el-switch>
           </template>
         </el-table-column>
         <el-table-column
           align="center"
-          prop="created"
+          prop="updatetime"
+          label="修改时间"
+          width="200">
+        </el-table-column>
+        <el-table-column
+          align="center"
+          prop="createtime"
           label="创建时间"
           width="200">
         </el-table-column>
@@ -74,8 +91,26 @@
       </el-table>
     </el-container>
 
+    <el-container class="cls-container cls-container-page">
+      <el-col>
+        <el-pagination
+          background
+          @current-change="handleCurrentChange"
+          :current-page.sync="data.page"
+          :page-size="data.limit"
+          layout="total, prev, pager, next"
+          :total="data.total">
+        </el-pagination>
+      </el-col>
+    </el-container>
+
     <dialogTool ref="dialogTool" :data='dialogToolDataDefault'>
-      <el-lee-edit ref="thisForm" slot="slotEditForm" :result='result' :data='dialogToolDataDefault'></el-lee-edit>
+      <el-lee-edit
+        ref="thisForm"
+        slot="slotEditForm"
+        :result='result'
+        :data='dialogToolDataDefault'>
+      </el-lee-edit>
     </dialogTool>
   </div>
 </template>
@@ -84,7 +119,7 @@
 </style>
 
 <script>
-
+import { mapActions } from 'vuex'
 import edit from '@/views/auth/group/edit'
 
 export default {
@@ -93,18 +128,26 @@ export default {
     'el-lee-edit': edit
   },
   mounted () {
+    // 绑定数据
+    this.getList()
   },
   inject: ['reload'],
   methods: {
+    ...mapActions([
+      'getAuthGroupList',
+      'editAuthGroup',
+      'delAuthGroup'
+    ]),
     cancel () {
       this.$refs.thisForm.reset()
-      this.result.openPanel = false
     },
     // 显示表单
     showDialogTool () {
       // 显示dialog
       this.$refs.dialogTool.showDialog()
-      this.result.openPanel = true
+      this.$nextTick(() => {
+        this.$refs.thisForm.$refs.rulesTree.setCheckedKeys([])
+      })
     },
     // 编辑事件，触发后直接提取column数据传到dialog
     handleEdit (index, column) {
@@ -115,35 +158,57 @@ export default {
         this.$refs.thisForm.setData(column)
       })
     },
+    // 修改状态
+    handleEditStatus (index, column) {
+      this.editAuthGroup({
+        id: column.id,
+        name: column.name,
+        rules: column.rules,
+        status: column.status
+      }).then((res) => {
+        this.$message.success(res.msg)
+      })
+    },
     // 删除事件
     handleDelete (index, column) {
-      console.log(index)
-      console.log(column)
-      this.reload() // 局部刷新
+      if (column.id === 1) {
+        this.$message.error('超级权限禁止删除')
+      } else {
+        this.delAuthGroup({
+          ids: column.id
+        }).then((res) => {
+          this.$message.success(res.msg)
+          this.reload() // 局部刷新
+        })
+      }
+    },
+    // 请求数据统一调用方法
+    getList () {
+      this.getAuthGroupList({
+        page: this.data.page
+      }).then((res) => {
+        this.data = res.data
+      })
     }
   },
   data () {
     return {
-      name: '',
-      page: 1,
+      data: {
+        page: 1,
+        limit: 1,
+        total: 0,
+        list: []
+      },
       result: {
         id: 'add',
         name: '',
-        rule: [],
-        status: '',
-        openPanel: false
+        rules: [],
+        status: 1
       },
       dialogToolDataDefault: {
         title: '添加',
         visible: false
-      },
-      tableData: [{
-        id: 1,
-        name: '超级管理组',
-        status: 2,
-        rule: [1, 2, 3],
-        created: '2021-11-01 10:10:10'
-      }]
+      }
     }
   }
 }

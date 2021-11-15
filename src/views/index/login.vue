@@ -36,6 +36,7 @@
                 v-model="result.captcha"
                 class="vertify_code"
                 maxlength="4"
+                @keyup.enter.native="submitForm('thisForm')"
                 auto-complete="false">
               </el-input>
                 <!-- 后端提供验证码图片方式 -->
@@ -58,7 +59,7 @@
       </el-card>
       </el-main>
     </el-container>
-      
+
   </div>
 </template>
 
@@ -67,7 +68,7 @@
 // import { getLoginStatus } from "../api/index";
 // import SIdentify from '@/components/captcha'
 import baseUrl from '@/api/baseUrl'
-import { mapActions } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 
 export default {
   name: 'app-login',
@@ -77,7 +78,7 @@ export default {
       identifyCode: '3528',
       passwordVisible: 'password',
       icon: 'lee-icon-biyan',
-      imgUrl: baseUrl + '/index/verify?' + new Date().getTime(),
+      imgUrl: baseUrl + '/verify?' + new Date().getTime(),
       result: {
         checked: false,
         username: '',
@@ -89,7 +90,7 @@ export default {
           { required: true, message: '请输入手机号', trigger: 'blur' },
           {
             validator: (rule, value, callback) => {
-              if (!/^[1][3,4,5,7,8,9][0-9]{9}$/.test(value)) {
+              if (value !== 'admin' && !/^[1][3,4,5,7,8,9][0-9]{9}$/.test(value)) {
               // 如果callback(new Error('错误要提示的信息'))代表验证不通过
                 return callback(new Error('请填写正确的手机号码'))
               }
@@ -110,19 +111,37 @@ export default {
       }
     }
   },
+  created () {
+    // 监听是否登录，如果已经登录就
+    if (this.token) {
+      if (this.$route.query.redirect) {
+        this.$router.push(this.$route.query.redirect)
+      } else {
+        this.$router.push('/')
+      }
+    }
+  },
+  computed: {
+    ...mapGetters([
+      'token',
+      'admin'
+    ])
+  },
   mounted () {
     this.account() // 获取cookie的方法
-    console.log('redirect => ', this.$route.query.redirect)
+    // console.log('redirect => ', this.$route.query.redirect)
+    // console.log('admin ===== ')
+    // console.log(this.token)
+    // console.log('admin ===== end')
   },
   methods: {
     ...mapActions([
-      'LoginByUsername'
+      'loginByUsername'
     ]),
     account () {
       let _memberMe = this.$cookie.get('memberMe')
       if (_memberMe) {
         let _j = JSON.parse(_memberMe)
-        console.log(_j)
         this.result.username = _j.u
         this.result.password = _j.p
         this.result.checked = _j.c
@@ -147,30 +166,23 @@ export default {
           } else {
             this.clearCookie()
           }
-          // this.$cookie.set('i-token', 'xxxsina', {expires: '10s'})
-          // this.$router.push('/')
-          this.LoginByUsername(this.result).then((res) => {
-            console.log('====login page=====')
-            console.log(res)
-            console.log('====login page end =====')
-          }).catch(err => {
-            console.log('====login page error=====')
-            console.log(err.data)
-          })
           // 调用方法提交
-          // getLoginStatus(params).then((res) => {
-          //   if (res.code == 1) {
-          //     localStorage.setItem('userName', this.ruleForm.username)
-          //     this.$router.push('/Info')
-          //     this.notify('登录成功', 'success')
-          //   }
-          //   if (res.code == 0) {
-          //     this.notify('验证码错误', 'error')
-          //   }
-          //   if (res.code == 2) {
-          //     this.notify('用户名或密码错误', 'error')
-          //   }
-          // })
+          this.loginByUsername(this.result).then((res) => {
+            if (res) {
+              this.$message.success(res.msg)
+              if (res.code == 200) {
+                if (this.$route.query.redirect) {
+                  this.$router.push(this.$route.query.redirect)
+                } else {
+                  this.$router.push('/')
+                }
+              }
+            }
+          }).catch(error => {
+            if (!error.code) {
+              this.resetImg()
+            }
+          })
         } else {
           return false
         }
@@ -178,7 +190,7 @@ export default {
     },
     // 点击图片更换验证码
     resetImg () {
-      this.imgUrl = baseUrl + '/index/verify?' + new Date().getTime()
+      this.imgUrl = baseUrl + '/verify?' + new Date().getTime()
     },
     // 这里是验证码第二种方法要用的函数，和 refreshCode() 一起
     randomNum (min, max) {
