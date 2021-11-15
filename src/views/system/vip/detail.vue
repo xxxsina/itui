@@ -19,7 +19,8 @@
                 <el-tag size="small" type="success" v-if="result.status==1">正常</el-tag>
                 <el-tag size="small" type="danger" v-if="result.status==2">禁止</el-tag>
             </el-descriptions-item>
-            <el-descriptions-item label="创建时间" :span="3">{{ result.createtime }}</el-descriptions-item>
+            <el-descriptions-item label="修改时间">{{ result.updatetime }}</el-descriptions-item>
+            <el-descriptions-item label="创建时间" :span="2">{{ result.createtime }}</el-descriptions-item>
             <el-descriptions-item label="规则"> <pre>{{ result.rules_farmat }}</pre> </el-descriptions-item>
         </el-descriptions>
         </el-drawer>

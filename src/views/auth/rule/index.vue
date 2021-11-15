@@ -65,7 +65,7 @@
         <el-table-column
           align="center"
           prop="ismenu"
-          label="菜单"
+          label="是否菜单"
           width="100">
           <template slot-scope="scope">
             <el-switch

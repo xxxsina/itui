@@ -1,21 +1,32 @@
 <template>
     <div class="app-users-vip">
         <el-container class="cls-container cls-container-op">
-            <el-button type="primary" @click="showDialogTool()" style="padding: 9px 12px;">
-                <i class="el-icon-plus"></i>
-                添加
-            </el-button>
+            <el-col style="white-space: nowrap;">
+                <el-button type="success" @click="reload" style="padding: 9px 12px;" title="刷新">
+                  <i class="el-icon-refresh"></i>
+                </el-button>
+                <el-button type="primary" @click="showDialogTool()" style="padding: 9px 12px;">
+                  <i class="el-icon-plus"></i>
+                  添加
+                </el-button>
+              </el-col>
         </el-container>
         <el-container class="cls-container cls-container-tab">
         <el-table
-            :data="tableData"
-            row-key="id"
-            border
-            default-expand-all
-            :cell-style="{padding:'0px'}"
-            :row-style="{height:'34px'}"
-            :tree-props="{children: 'childs'}"
-            style="width: 100%">
+          ref="multipleTable"
+          :data="data.list"
+          row-key="id"
+          border
+          default-expand-all
+          @selection-change="handleSelectionChange"
+          :cell-style="{padding:'0px'}"
+          :row-style="{height:'34px'}"
+          :tree-props="{children: 'childs'}"
+          style="width: 100%">
+          <el-table-column
+            type="selection"
+            width="55">
+          </el-table-column>
             <el-table-column
             align="center"
             prop="id"
@@ -70,24 +81,25 @@
             </el-table-column>
             <el-table-column
             align="center"
-            prop="createtime"
-            label="注册时间"
-            width="180">
-            </el-table-column>
-            <el-table-column
-            align="center"
             prop="status"
             label="状态"
             width="100">
             <template slot-scope="scope">
-                <el-switch
+              <el-switch
                 v-model="scope.row.status"
                 :value="scope.row.status"
                 :active-value="1"
-                :inactive-value="2"
+                :inactive-value="0"
+                @change="handleEditStatus(scope.$index, scope.row)"
                 active-color="#13ce66">
-                </el-switch>
+              </el-switch>
             </template>
+            </el-table-column>
+            <el-table-column
+            align="center"
+            prop="createtime"
+            label="创建时间"
+            width="180">
             </el-table-column>
             <el-table-column
             align="center"
@@ -119,17 +131,27 @@
         </el-table>
         </el-container>
         <el-container class="cls-container cls-container-page">
-        <el-col>
-            <el-pagination
-            background
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            :current-page.sync="currentPage"
-            :page-size="100"
-            layout="total, prev, pager, next"
-            :total="999">
-            </el-pagination>
-        </el-col>
+          <el-col :sm="4" style="text-align:left;">
+            <el-popconfirm
+              confirm-button-text='确定'
+              cancel-button-text='不用了'
+              icon="el-icon-info"
+              icon-color="red"
+              title="你确定要删除该条内容吗？"
+              @confirm="handleDeleteBatch()">
+                <el-button slot="reference" type="danger">批量删除</el-button>
+              </el-popconfirm>
+          </el-col>
+          <el-col>
+              <el-pagination
+              background
+              @current-change="handleCurrentChange"
+              :current-page.sync="data.page"
+              :page-size="data.limit"
+              layout="total, prev, pager, next"
+              :total="data.total">
+              </el-pagination>
+          </el-col>
         </el-container>
         <!-- 编辑：弹窗方式 -->
         <dialogTool ref="dialogTool" :data='dialogToolDataDefault'>
@@ -144,8 +166,9 @@
 </style>
 
 <script>
-import detail from './detail'
-import edit from './edit'
+import { mapActions } from 'vuex'
+import detail from '@/views/system/vip/detail'
+import edit from '@/views/system/vip/edit'
 
 export default {
   name: 'app-users-vip',
@@ -153,17 +176,38 @@ export default {
     'el-lee-detail': detail,
     'el-lee-edit': edit
   },
+  // 局部刷新
+  inject: ['reload'],
+  mounted () {
+    // 绑定数据
+    this.getList()
+  },
   methods: {
-    errorHandler () {
-      return true
-    },
+    ...mapActions([
+      'getAuthVipList',
+      'editAuthVip',
+      'delAuthVip'
+    ]),
+    // errorHandler () {
+    //   return true
+    // },
     cancel () {
       this.$refs.thisForm.reset()
+    },
+    // 批量选中
+    handleSelectionChange (row) {
+      this.multipleSelection = row
     },
     // 显示表单
     showDialogTool () {
       // 显示dialog
       this.$refs.dialogTool.showDialog()
+    },
+    // 抽屉显示详情
+    handleDoc (index, column) {
+      column.rules_farmat = JSON.stringify(JSON.parse(column.rules), null, 2)
+      this.$refs.codesDetail.showDraw()
+      this.row = column
     },
     // 编辑事件，触发后直接提取column数据传到dialog
     handleEdit (index, column) {
@@ -176,37 +220,54 @@ export default {
         this.$refs.thisForm.setData(column)
       })
     },
-    handleDoc (index, column) {
-      column.rules_farmat = JSON.stringify(JSON.parse(column.rules), null, 2)
-      this.$refs.codesDetail.showDraw()
-      this.row = column
+    // 修改状态
+    handleEditStatus (index, column) {
+      this.editAuthVip({
+        id: column.id,
+        name: column.name,
+        price: column.price,
+        period: column.period,
+        rules: column.rules,
+        status: column.status
+      }).then((res) => {
+        this.$message.success(res.msg)
+      })
     },
     // 删除事件
     handleDelete (index, column) {
-      console.log(index)
-      console.log(column)
+      this.delAuthVip({
+        ids: column.id
+      }).then((res) => {
+        this.$message.success(res.msg)
+        this.reload() // 局部刷新
+      })
     },
-    // search form提交方法
-    submitSearchForm (formName) {
-      this.$refs[formName]
-        .validate()
-        .then(res => {
-          console.log(this.search)
-          // this.fresh()
+    // 批量删除
+    handleDeleteBatch () {
+      if (this.multipleSelection.length) {
+        let ids = []
+        this.multipleSelection.forEach(row => {
+          ids.push(row.id)
         })
-        // eslint-disable-next-line handle-callback-err
-        .catch(err => {
-          console.log(err)
-          console.log('error submit!!')
+        this.delAuthVip({
+          ids: ids
+        }).then((res) => {
+          this.$message.success(res.msg)
+          this.reload() // 局部刷新
         })
+      } else {
+        this.$message.error('请选择要删除的数据')
+      }
     },
-    handleSizeChange (val) {
-      console.log(`每页 ${val} 条`)
+    // 翻页
+    handleCurrentChange (page) {
+      this.getList()
     },
-    handleCurrentChange (val) {
-      console.log(`当前页: ${val}`)
-      this.page = val
-      // this.getDataText()
+    // 请求数据统一调用方法
+    getList () {
+      this.getAuthVipList().then((res) => {
+        this.data = res.data
+      })
     }
   },
   data () {
@@ -215,13 +276,17 @@ export default {
         title: '添加',
         visible: false
       },
-      currentPage: 1,
       drawer: false,
-      drawerSize: this.G.getDrawerSize(),
       row: {},
+      drawerSize: this.G.getDrawerSize(),
+      data: {
+        page: 1,
+        limit: 1,
+        total: 0,
+        list: []
+      },
       result: {
         id: 'add',
-        admin_id: '',
         name: '',
         status: 1,
         is_show: 0,
@@ -230,50 +295,7 @@ export default {
         cost_price: '',
         period: '',
         rules: '',
-        rules_farmat: '',
-        createtime: ''
-      },
-      tableData: [
-        {
-          id: '1',
-          admin_id: '1',
-          name: '一月vip',
-          status: 1,
-          is_show: 1,
-          is_sort: 1,
-          price: '10.00',
-          cost_price: '20.00',
-          period: 1,
-          rules: '{"common":{"index":5},"jump":[{"type":1,"index":1,"add":1,"del":false},{"type":2,"add":1,"del":false},{"type":3,"add":1,"del":false}],"jumpurl":[{"type":1,"index":1,"add":1},{"type":2,"add":1},{"type":3,"add":1}],"form":{"index":2,"add":2,"del":false},"cooperation":{"index":false,"add":false,"del":false},"shorturl":{"index":1,"add":2,"del":false}}',
-          createtime: '2021-11-01 14:53:03'
-        },
-        {
-          id: '2',
-          admin_id: '1',
-          name: '三月vip',
-          status: 1,
-          is_show: 1,
-          is_sort: 2,
-          price: '30.00',
-          cost_price: '90.00',
-          period: 3,
-          rules: '{"jumpurl":[{"type":1,"add":200},{"type":2,"add":200},{"type":3,"add":200}]}',
-          createtime: '2021-11-01 14:53:03'
-        }
-      ],
-      rulesSearch: {
-        content: [
-          { min: 1, max: 15, message: '长度在 1 到 15 个字符', trigger: 'blur' },
-          {
-            validator: (rule, value, callback) => {
-              if (!value && !this.search.datetime) {
-                return callback(new Error('请填写搜索内容'))
-              }
-              // 如果callback()代表验证通过
-              return callback()
-            }
-          }
-        ]
+        rules_farmat: ''
       }
     }
   }

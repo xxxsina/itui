@@ -181,23 +181,6 @@ export default {
     handleSelectionChange (row) {
       this.multipleSelection = row
     },
-    // 批量删除
-    handleDeleteBatch () {
-      if (this.multipleSelection.length) {
-        let ids = []
-        this.multipleSelection.forEach(row => {
-          ids.push(row.id)
-        })
-        this.delAdmin({
-          ids: ids
-        }).then((res) => {
-          this.$message.success(res.msg)
-          this.reload() // 局部刷新
-        })
-      } else {
-        this.$message.error('请选择要删除的数据')
-      }
-    },
     // 显示表单
     showDialogTool () {
       // 显示dialog
@@ -238,6 +221,23 @@ export default {
           this.$message.success(res.msg)
           this.reload() // 局部刷新
         })
+      }
+    },
+    // 批量删除
+    handleDeleteBatch () {
+      if (this.multipleSelection.length) {
+        let ids = []
+        this.multipleSelection.forEach(row => {
+          ids.push(row.id)
+        })
+        this.delAdmin({
+          ids: ids
+        }).then((res) => {
+          this.$message.success(res.msg)
+          this.reload() // 局部刷新
+        })
+      } else {
+        this.$message.error('请选择要删除的数据')
       }
     },
     // 翻页

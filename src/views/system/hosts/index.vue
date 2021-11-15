@@ -1,14 +1,19 @@
 <template>
   <div class="app-system-hosts">
     <el-container class="cls-container cls-container-op">
-      <el-button type="primary" @click="showDialogTool()" style="padding: 9px 12px;">
-        <i class="el-icon-plus"></i>
-        添加
-      </el-button>
+      <el-col style="white-space: nowrap;">
+        <el-button type="success" @click="reload" style="padding: 9px 12px;" title="刷新">
+          <i class="el-icon-refresh"></i>
+        </el-button>
+        <el-button type="primary" @click="showDialogTool()" style="padding: 9px 12px;">
+          <i class="el-icon-plus"></i>
+          添加
+        </el-button>
+      </el-col>
     </el-container>
     <el-container class="cls-container cls-container-tab">
       <el-table
-        :data="tableData"
+        :data="data.list"
         row-key="id"
         border
         default-expand-all
@@ -46,7 +51,7 @@
         </el-table-column>
         <el-table-column
           align="center"
-          prop="sorting"
+          prop="is_sort"
           label="排序[升序]"
           width="100">
         </el-table-column>
@@ -56,8 +61,14 @@
           label="状态"
           width="100">
           <template slot-scope="scope">
-            <el-tag type="success" v-if="scope.row.status == 1">正常</el-tag>
-            <el-tag type="danger" v-else>隐藏</el-tag>
+            <el-switch
+              v-model="scope.row.status"
+              :value="scope.row.status"
+              :active-value="1"
+              :inactive-value="0"
+              @change="handleEditStatus(scope.$index, scope.row)"
+              active-color="#13ce66">
+            </el-switch>
           </template>
         </el-table-column>
         <el-table-column
@@ -112,6 +123,7 @@
 </style>
 
 <script>
+import { mapActions } from 'vuex'
 import edit from '@/views/system/hosts/edit'
 
 export default {
@@ -121,7 +133,16 @@ export default {
   },
   // 局部刷新
   inject: ['reload'],
+  mounted () {
+    // 绑定数据
+    this.getList()
+  },
   methods: {
+    ...mapActions([
+      'getHostsList',
+      'editHosts',
+      'delHosts'
+    ]),
     // 重置表单
     cancel () {
       this.$refs.thisForm.reset()
@@ -140,11 +161,31 @@ export default {
         this.$refs.thisForm.setData(column)
       })
     },
+    // 修改状态
+    handleEditStatus (index, column) {
+      this.editHosts({
+        id: column.id,
+        title: column.title,
+        host: column.host,
+        status: column.status
+      }).then((res) => {
+        this.$message.success(res.msg)
+      })
+    },
     // 删除事件
     handleDelete (index, column) {
-      console.log(index)
-      console.log(column)
-      this.reload() // 局部刷新
+      this.delHosts({
+        ids: column.id
+      }).then((res) => {
+        this.$message.success(res.msg)
+        this.reload() // 局部刷新
+      })
+    },
+    // 请求数据统一调用方法
+    getList () {
+      this.getHostsList().then((res) => {
+        this.data = res.data
+      })
     }
   },
   data () {
@@ -153,41 +194,20 @@ export default {
         title: '添加',
         visible: false
       },
+      data: {
+        page: 1,
+        limit: 1,
+        total: 0,
+        list: []
+      },
       result: {
         id: 'add',
         title: '',
         host: '',
         status: 1,
         hot: 0,
-        sorting: '',
-        is_delete: 0,
-        admin_id: 0,
-        updatetime: '',
-        createtime: ''
-      },
-      tableData: [{
-        id: 1,
-        title: 's0o2.cn',
-        host: 'http://s0o2.cn',
-        status: 1,
-        hot: 0,
-        sorting: 2,
-        is_delete: 0,
-        admin_id: 1,
-        updatetime: '2021-11-06 08:11:32',
-        createtime: '2021-11-01 10:10:10'
-      }, {
-        id: 2,
-        title: 'i8jo.cn',
-        host: 'http://i8jo.cn',
-        status: 0,
-        hot: 1,
-        sorting: 1,
-        is_delete: 0,
-        admin_id: 1,
-        updatetime: '2021-11-06 08:11:32',
-        createtime: '2021-11-01 10:10:10'
-      }]
+        is_sort: ''
+      }
     }
   }
 }
