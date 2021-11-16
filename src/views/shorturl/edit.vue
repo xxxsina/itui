@@ -5,7 +5,7 @@
                 <input type="hidden" :value="result.id" />
             </el-form-item>
             <el-form-item label="用户账号" prop="username">
-                <el-input v-model="result.username" :disabled="true" placeholder="用户账号"></el-input>
+                <el-input v-model="result.username" :disabled="disabled" placeholder="用户账号"></el-input>
             </el-form-item>
             <el-form-item label="短连接名称" prop="name">
                 <el-input v-model="result.name" placeholder="短连接名称"></el-input>
@@ -17,25 +17,25 @@
                 <el-radio-group v-model="result.short_url">
                     <el-radio
                      v-for="(val, k) in shortUrls"
-                     :label="val"
+                     :label="val.host"
                      :key="k">
-                    {{ val }}
+                    {{ val.host }}
                     </el-radio>
                 </el-radio-group>
             </el-form-item>
             <el-form-item label="状态" prop="status">
                 <el-radio-group v-model="result.status">
                     <el-radio :label="1">正常</el-radio>
-                    <el-radio :label="2">禁止</el-radio>
+                    <el-radio :label="0">禁止</el-radio>
                 </el-radio-group>
             </el-form-item>
             <el-form-item label="有效期" prop="period">
                 <el-select v-model="result.period" placeholder="请选择">
                     <el-option
                     v-for="item in options"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value">
+                    :key="item.day"
+                    :label="item.title"
+                    :value="item.day">
                     </el-option>
                 </el-select>
                 <el-tag type="danger" size="mini">不选择为永久有效</el-tag>
@@ -85,12 +85,26 @@
 </style>
 
 <script>
+import { mapActions } from 'vuex'
 
 export default {
   name: 'edit-form',
   props: ['data', 'result'],
   inject: ['reload'],
+  mounted () {
+    this.getShortHostsConfig().then((res) => {
+      this.shortUrls = res.data
+    })
+    this.getPeriodConfig().then((res) => {
+      this.options = res.data
+    })
+  },
   methods: {
+    ...mapActions([
+      'getShortHostsConfig',
+      'getPeriodConfig',
+      'editShortUrl'
+    ]),
     // 重置表单数据
     reset () {
       this.$refs.thisForm.resetFields()
@@ -103,7 +117,7 @@ export default {
       })
       // 重试挨个赋值，这种方式就可以不绑定父组件了
       if (row) {
-        for (let key in row) {
+        for (let key in this.result) {
           this.result[key] = row[key]
         }
       } else if (row === false && this.result.id !== 'add') {
@@ -122,67 +136,26 @@ export default {
     fresh () {
       this.reload() // 局部刷新
     },
-    beforeAvatarUpload (file) {
-      const isJPG = file.type === 'image/jpeg'
-      const isPNG = file.type === 'image/png'
-      const isLt2M = file.size / 1024 / 1024 < 2
-
-      if (!isJPG && !isPNG) {
-        this.$message.error('上传头像图片只能是 JPG 或者 PNG 格式!')
-      }
-      if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!')
-      }
-
-      return (isPNG || isJPG) && isLt2M
-    },
-    handleAvatarSuccess (res, file) {
-      console.log(file)
-      this.imageUrl = URL.createObjectURL(file.raw)
-    },
     // form提交方法
     submitForm (formName) {
       this.$refs[formName]
         .validate()
         .then(res => {
-          console.log(this.result)
-          this.fresh()
-        })
-        // eslint-disable-next-line handle-callback-err
-        .catch(err => {
-          if (err.message) {
-            this.$message.error(err.message)
-          }
-          console.log(err)
-          console.log('error submit!!')
+          // 提交接口
+          this.editShortUrl(this.result).then((res) => {
+            this.$message.success(res.msg)
+            this.fresh() // 局部刷新
+          }).catch(() => {
+            this.fresh()
+          })
         })
     }
   },
   data () {
     return {
-      shortUrls: {
-        '1': 'http://i8jo.cn',
-        '2': 'http://s0o2.cn'
-      },
-      options: [{
-        value: 7,
-        label: '7天'
-      }, {
-        value: 30,
-        label: '30天'
-      }, {
-        value: 90,
-        label: '90天'
-      }, {
-        value: 180,
-        label: '180天'
-      }, {
-        value: 360,
-        label: '360天'
-      }, {
-        value: 0,
-        label: '永久'
-      }],
+      shortUrls: {},
+      options: [],
+      disabled: true,
       // 表单验证规则
       rulesForm: {
         username: [

@@ -27,3 +27,13 @@ export function editAdmin (params) {
     params
   )
 }
+
+// 管理员日志列表
+export function getAdminLogList (search, page) {
+  return axios().post(
+    baseUrl + '/adminLog',
+    {
+      search,
+      page
+    })
+}

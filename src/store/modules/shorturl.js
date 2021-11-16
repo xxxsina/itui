@@ -1,36 +1,35 @@
-import { getAuthGroup, getPeriodConfig, getShortHostsConfig } from '@/api/backend/common'
+import { getShortUrlList, editShortUrl, delShortUrl } from '@/api/backend/shorturl'
 
-const common = {
+const shorturl = {
   state: {
-    authGroup: {}
   },
   mutations: {
   },
   actions: {
-    // 获取权限组
-    getAuthGroup ({ commit }) {
+    // 列表
+    getShortUrlList ({ commit }, params) {
       return new Promise((resolve, reject) => {
-        getAuthGroup().then(response => {
+        getShortUrlList(params.search, params.page).then(response => {
           resolve(response)
         }).catch(error => {
           reject(error)
         })
       })
     },
-    // 获取有效期
-    getPeriodConfig ({ commit }) {
+    // 编辑
+    editShortUrl ({ commit }, params) {
       return new Promise((resolve, reject) => {
-        getPeriodConfig().then(response => {
+        editShortUrl(params).then(response => {
           resolve(response)
         }).catch(error => {
           reject(error)
         })
       })
     },
-    // 获取短连接
-    getShortHostsConfig ({ commit }) {
+    // 删除
+    delShortUrl ({ commit }, params) {
       return new Promise((resolve, reject) => {
-        getShortHostsConfig().then(response => {
+        delShortUrl(params.ids).then(response => {
           resolve(response)
         }).catch(error => {
           reject(error)
@@ -40,4 +39,4 @@ const common = {
   }
 }
 
-export default common
+export default shorturl

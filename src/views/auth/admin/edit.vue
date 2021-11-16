@@ -55,7 +55,7 @@ export default {
     this.getAuthGroup().then((res) => {
       this.groups = res.data
     })
-    console.log(this.result)
+    // console.log(this.result)
   },
   inject: ['reload'],
   methods: {

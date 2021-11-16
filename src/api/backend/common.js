@@ -7,3 +7,17 @@ export function getAuthGroup () {
     baseUrl + '/getAuthGroup'
   )
 }
+
+// 获取有效期
+export function getPeriodConfig () {
+  return axios().post(
+    baseUrl + '/getPeriodConfig'
+  )
+}
+
+// 获取短连接
+export function getShortHostsConfig () {
+  return axios().post(
+    baseUrl + '/getShortHostsConfig'
+  )
+}

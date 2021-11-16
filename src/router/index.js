@@ -102,6 +102,20 @@ const router = new Router({
           }
         },
         {
+          path: '/auth/adminlog',
+          name: 'adminlog',
+          meta: {
+            requireAuth: true,
+            crumb: [
+              {title: '权限管理'},
+              {title: '管理员日志'}
+            ]
+          },
+          components: {
+            content: () => import('@/views/auth/adminlog/index')
+          }
+        },
+        {
           path: '/member/user',
           name: 'user',
           meta: {

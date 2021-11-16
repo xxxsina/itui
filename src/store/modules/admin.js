@@ -1,6 +1,6 @@
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { loginByUsername, logout } from '@/api/backend/login'
-import { getAdminList, delAdmin, editAdmin } from '@/api/backend/admin'
+import { getAdminList, delAdmin, editAdmin, getAdminLogList } from '@/api/backend/admin'
 
 const admin = {
   state: {
@@ -73,6 +73,16 @@ const admin = {
     delAdmin ({ commit }, params) {
       return new Promise((resolve, reject) => {
         delAdmin(params.ids).then(response => {
+          resolve(response)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    // 管理员日志列表
+    getAdminLogList ({ commit }, params) {
+      return new Promise((resolve, reject) => {
+        getAdminLogList(params.search, params.page).then(response => {
           resolve(response)
         }).catch(error => {
           reject(error)

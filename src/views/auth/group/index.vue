@@ -182,6 +182,10 @@ export default {
         })
       }
     },
+    // 翻页
+    handleCurrentChange (page) {
+      this.getList()
+    },
     // 请求数据统一调用方法
     getList () {
       this.getAuthGroupList({

@@ -11,21 +11,19 @@
         <el-descriptions :title="result.name" direction="vertical" :column="4" border class="cls-draw-desc">
             <el-descriptions-item label="ID">{{ result.id }}</el-descriptions-item>
             <el-descriptions-item label="账号">{{ result.username }}</el-descriptions-item>
-            <el-descriptions-item label="状态" :span="2" label-class-name="cls-tb-label">
+            <el-descriptions-item label="状态" :span="2">
                 <el-tag size="small" type="success" v-if="result.status==1">正常</el-tag>
                 <el-tag size="small" type="danger" v-if="result.status==2">禁止</el-tag>
             </el-descriptions-item>
-            <el-descriptions-item label="名称" label-class-name="cls-tb-label">{{ result.name }}</el-descriptions-item>
-            <el-descriptions-item label="访问密码" label-class-name="cls-tb-label">{{ result.pwd }}</el-descriptions-item>
-            <el-descriptions-item label="有效期" :span="2" label-class-name="cls-tb-label">{{ result.period }}</el-descriptions-item>
+            <el-descriptions-item label="名称" >{{ result.name }}</el-descriptions-item>
+            <el-descriptions-item label="访问密码">{{ result.pwd }}</el-descriptions-item>
+            <el-descriptions-item label="有效期" :span="2">{{ result.period }}</el-descriptions-item>
             <el-descriptions-item label="访问次数" label-class-name="cls-tb-label" content-class-name="cls-tb-content">{{ result.total }}</el-descriptions-item>
-            <el-descriptions-item label="访问上限" :span="3" label-class-name="cls-tb-label">{{ result.total_limit }}</el-descriptions-item>
-            <el-descriptions-item label="生效日期"  label-class-name="cls-tb-label">{{ result.effective_time }}</el-descriptions-item>
-            <el-descriptions-item label="失效日期" :span="3" label-class-name="cls-tb-label">{{ result.lose_time }}</el-descriptions-item>
-            <el-descriptions-item label="创建时间" label-class-name="cls-tb-label">{{ result.createtime }}</el-descriptions-item>
-            <el-descriptions-item label="修改时间" :span="3" label-class-name="cls-tb-label">{{ result.updatetime }}</el-descriptions-item>
-            <el-descriptions-item label="短连接" :span="4" label-class-name="cls-tb-label">{{ result.url_addr }}</el-descriptions-item>
-            <el-descriptions-item label="原连接" :span="4" label-class-name="cls-tb-label">{{ result.url }}</el-descriptions-item>
+            <el-descriptions-item label="访问上限" :span="3" >{{ result.total_limit }}</el-descriptions-item>
+            <el-descriptions-item label="创建时间">{{ result.createtime }}</el-descriptions-item>
+            <el-descriptions-item label="修改时间" :span="3">{{ result.updatetime }}</el-descriptions-item>
+            <el-descriptions-item label="短连接" :span="4">{{ result.short_url_text }}</el-descriptions-item>
+            <el-descriptions-item label="原连接" :span="4">{{ result.url }}</el-descriptions-item>
         </el-descriptions>
         </el-drawer>
     </div>

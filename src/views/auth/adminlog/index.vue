@@ -1,5 +1,5 @@
 <template>
-    <div class="app-member-userlog">
+    <div class="app-auth-adminlog">
         <el-container class="cls-container cls-container-op">
             <el-col style="white-space: nowrap;">
                 <el-form :model="search" :rules="rulesSearch" ref="searchForm" :inline="true">
@@ -101,10 +101,10 @@
 
 <script>
 import { mapActions } from 'vuex'
-import detail from '@/views/member/userlog/detail'
+import detail from '@/views/auth/adminlog/detail'
 
 export default {
-  name: 'app-member-userlog',
+  name: 'app-auth-adminlog',
   components: {
     'el-lee-detail': detail
   },
@@ -116,7 +116,7 @@ export default {
   },
   methods: {
     ...mapActions([
-      'getUserLogList'
+      'getAdminLogList'
     ]),
     cancel () {
       this.$refs.thisForm.reset()
@@ -131,8 +131,7 @@ export default {
       this.$refs[formName]
         .validate()
         .then(res => {
-          // console.log(this.search)
-          this.getUserLogList({
+          this.getAdminLogList({
             search: this.search,
             page: this.data.page
           }).then((res) => {
@@ -146,7 +145,7 @@ export default {
     },
     // 请求数据统一调用方法
     getList () {
-      this.getUserLogList({
+      this.getAdminLogList({
         page: this.data.page
       }).then((res) => {
         this.data = res.data

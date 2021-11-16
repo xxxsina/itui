@@ -118,7 +118,19 @@ const menuBar = {
                 status: 1
               }
             ]
-          }]
+          },
+          {
+            id: 21,
+            ismenu: 1,
+            pid: 5,
+            title: '管理员日志',
+            icon: '',
+            weight: 100,
+            rulelink: '/auth/adminlog',
+            status: 1,
+            childs: []
+          }
+        ]
       },
       {
         id: 11,
