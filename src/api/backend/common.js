@@ -21,3 +21,10 @@ export function getShortHostsConfig () {
     baseUrl + '/getShortHostsConfig'
   )
 }
+
+// 获取vip
+export function getVipConfig () {
+  return axios().post(
+    baseUrl + '/getVipConfig'
+  )
+}

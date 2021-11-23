@@ -60,12 +60,16 @@
 </style>
 
 <script>
+import { mapActions } from 'vuex'
 
 export default {
   name: 'edit-form',
   props: ['data', 'result'],
   inject: ['reload'],
   methods: {
+    ...mapActions([
+      'editFormLog'
+    ]),
     // 重置表单数据
     reset () {
       this.$refs.thisForm.resetFields()
@@ -78,7 +82,7 @@ export default {
       })
       // 重试挨个赋值，这种方式就可以不绑定父组件了
       if (row) {
-        for (let key in row) {
+        for (let key in this.result) {
           this.result[key] = row[key]
         }
       } else if (row === false && this.result.id !== 'add') {
@@ -120,16 +124,13 @@ export default {
       this.$refs[formName]
         .validate()
         .then(res => {
-          console.log(this.result)
-          this.fresh()
-        })
-        // eslint-disable-next-line handle-callback-err
-        .catch(err => {
-          if (err.message) {
-            this.$message.error(err.message)
-          }
-          console.log(err)
-          console.log('error submit!!')
+          // 提交接口
+          this.editFormLog(this.result).then((res) => {
+            this.$message.success(res.msg)
+            this.fresh() // 局部刷新
+          }).catch(() => {
+            this.fresh()
+          })
         })
     }
   },

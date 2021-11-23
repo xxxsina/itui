@@ -122,7 +122,7 @@ const router = new Router({
             requireAuth: true,
             crumb: [
               {title: '用户管理'},
-              {title: '用户列表'}
+              {title: '用户'}
             ]
           },
           components: {
@@ -248,7 +248,7 @@ const router = new Router({
         },
         {
           path: '/sheet/:parent_id',
-          name: 'sheet/list',
+          name: 'sheet/form',
           meta: {
             requireAuth: true,
             crumb: [

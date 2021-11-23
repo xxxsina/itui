@@ -5,7 +5,7 @@
                 <input type="hidden" :value="result.id" />
             </el-form-item>
             <el-form-item label="用户账号" prop="username">
-                <el-input v-model="result.username" :disabled="disabled" placeholder="用户账号"></el-input>
+                <el-input v-model="result.username" placeholder="用户账号"></el-input>
             </el-form-item>
             <el-form-item label="短连接名称" prop="name">
                 <el-input v-model="result.name" placeholder="短连接名称"></el-input>
@@ -158,9 +158,25 @@ export default {
       disabled: true,
       // 表单验证规则
       rulesForm: {
-        username: [
-          { required: true, message: '请填写用户账号', trigger: 'change' }
-        ],
+        // username: [
+        //   { required: true, message: '请填写用户账号', trigger: 'change' }
+        // ],
+        username: {
+          required: true,
+          validator: (rule, value, callback) => {
+            if (!value) {
+              return callback(new Error('请填写账号'))
+            }
+
+            if (!/^1[3-9]\d{9}$/.test(value)) {
+              // 如果callback(new Error('错误要提示的信息'))代表验证不通过
+              return callback(new Error('请填写正确的手机号码'))
+            }
+            // 如果callback()代表验证通过
+            return callback()
+          },
+          trigger: 'change'
+        },
         name: [
           { required: true, message: '请填写短连接名称', trigger: 'change' },
           { max: 15, message: '名称不能超过15个字符', trigger: 'change' }

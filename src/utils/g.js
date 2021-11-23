@@ -1,5 +1,6 @@
 
 export default {
+  imgHost: 'http://img.itui360.cn/',
   imgErrPath: '../static/images/broken_err.png',
   hostName: '爱推360',
   menu: '',
@@ -14,7 +15,8 @@ export default {
   },
   // 判断是否手机访问
   isMobileInterView () {
-    return navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
+    let win = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
+    return win !== null
   },
   // menu是否折叠
   isFoldMenu () {

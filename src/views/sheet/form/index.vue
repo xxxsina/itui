@@ -3,6 +3,9 @@
         <el-container class="cls-container cls-container-op">
             <el-col style="white-space: nowrap;">
                 <el-form :model="search" :rules="rulesSearch" ref="searchForm" :inline="true">
+                    <el-button type="success" @click="reload" style="padding: 9px 12px;" title="刷新">
+                      <i class="el-icon-refresh"></i>
+                    </el-button>
                     <el-form-item prop="datetime">
                         <el-date-picker
                             v-model="search.datetime"
@@ -25,13 +28,21 @@
         </el-container>
         <el-container class="cls-container cls-container-tab">
         <el-table
-            :data="tableData"
+            ref="multipleTable"
+            :data="data.list"
             row-key="id"
             border
             default-expand-all
+            @selection-change="handleSelectionChange"
             :cell-style="{padding:'0px'}"
             :row-style="{height:'34px'}"
+            :tree-props="{children: 'childs'}"
             style="width: 100%">
+            <el-table-column
+              align="center"
+              type="selection"
+              width="55">
+            </el-table-column>
             <el-table-column
             align="center"
             prop="id"
@@ -101,17 +112,27 @@
         </el-table>
         </el-container>
         <el-container class="cls-container cls-container-page">
-        <el-col>
-            <el-pagination
+          <el-col :sm="4" style="text-align:left;">
+            <el-popconfirm
+              confirm-button-text='确定'
+              cancel-button-text='不用了'
+              icon="el-icon-info"
+              icon-color="red"
+              title="你确定要删除该条内容吗？"
+              @confirm="handleDeleteBatch()">
+                <el-button slot="reference" type="danger">批量删除</el-button>
+              </el-popconfirm>
+          </el-col>
+          <el-col>
+              <el-pagination
               background
-              @size-change="handleSizeChange"
               @current-change="handleCurrentChange"
-              :current-page.sync="currentPage"
-              :page-size="100"
+              :current-page.sync="data.page"
+              :page-size="data.limit"
               layout="total, prev, pager, next"
-              :total="999">
-            </el-pagination>
-        </el-col>
+              :total="data.total">
+              </el-pagination>
+          </el-col>
         </el-container>
         <!-- 编辑：弹窗方式 -->
         <dialogTool ref="dialogTool" :data='dialogToolDataDefault'>
@@ -131,6 +152,7 @@
 </style>
 
 <script>
+import { mapActions } from 'vuex'
 import edit from '@/views/sheet/form/edit'
 
 export default {
@@ -138,11 +160,17 @@ export default {
   components: {
     'el-lee-edit': edit
   },
-  created () {
-    console.log(this.$route.params.parent_id)
-    // console.log(this.$route.query)
+  // 局部刷新
+  inject: ['reload'],
+  mounted () {
+    // 绑定数据
+    this.getList()
   },
   methods: {
+    ...mapActions([
+      'getFormLogList',
+      'delFormLog'
+    ]),
     cancel () {
       this.$refs.thisForm.reset()
     },
@@ -167,39 +195,74 @@ export default {
     },
     // 删除事件
     handleDelete (index, column) {
-      console.log(index)
-      console.log(column)
+      this.delFormLog({
+        ids: column.id
+      }).then((res) => {
+        this.$message.success(res.msg)
+        this.reload() // 局部刷新
+      })
+    },
+    // 批量选中
+    handleSelectionChange (row) {
+      this.multipleSelection = row
+    },
+    // 批量删除
+    handleDeleteBatch () {
+      if (this.multipleSelection.length) {
+        let ids = []
+        this.multipleSelection.forEach(row => {
+          ids.push(row.id)
+        })
+        this.delFormLog({
+          ids: ids
+        }).then((res) => {
+          this.$message.success(res.msg)
+          this.reload() // 局部刷新
+        })
+      } else {
+        this.$message.error('请选择要删除的数据')
+      }
     },
     // search form提交方法
     submitSearchForm (formName) {
       this.$refs[formName]
         .validate()
         .then(res => {
-          console.log(this.search)
-          // this.fresh()
-        })
-        // eslint-disable-next-line handle-callback-err
-        .catch(err => {
-          console.log(err)
-          console.log('error submit!!')
+          this.getFormLogList({
+            search: this.search,
+            page: 1
+          }).then((res) => {
+            this.data = res.data
+          })
         })
     },
-    handleSizeChange (val) {
-      console.log(`每页 ${val} 条`)
+    // 翻页
+    handleCurrentChange (page) {
+      this.getList()
     },
-    handleCurrentChange (val) {
-      console.log(`当前页: ${val}`)
-      this.page = val
-      this.submitSearchForm('searchForm')
+    // 请求数据统一调用方法
+    getList () {
+      this.getFormLogList({
+        search: this.search,
+        page: this.data.page
+      }).then((res) => {
+        this.data = res.data
+      })
     }
   },
   data () {
     return {
-      currentPage: 2,
       drawer: false,
       dialogToolDataDefault: {
         title: '添加',
         visible: false
+      },
+      multipleSelection: [],
+      data: {
+        page: 1,
+        limit: 1,
+        total: 0,
+        list: []
       },
       search: {
         form_id: this.$route.params.parent_id,
@@ -207,43 +270,11 @@ export default {
         content: ''
       },
       result: {
-        id: '',
-        uid: '',
-        form_id: '',
+        id: 'add',
         realname: '',
-        phone: 0,
-        image: '',
-        is_delete: '',
-        admin_id: '',
-        updatetime: '',
-        createtime: ''
+        phone: '',
+        image: ''
       },
-      tableData: [
-        {
-          id: '1',
-          uid: '2',
-          form_id: '1',
-          realname: '王五',
-          phone: '13980789555',
-          image: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
-          is_delete: 0,
-          admin_id: '1',
-          updatetime: '2021-11-04 01:53:03',
-          createtime: '2021-11-01 14:53:03'
-        },
-        {
-          id: '2',
-          uid: '2',
-          form_id: '1',
-          realname: '赵四',
-          phone: '13980780000',
-          image: 'https://www.runoob.com/try/demo_source/paris.jpg',
-          is_delete: 0,
-          admin_id: '1',
-          updatetime: '2021-11-04 01:53:03',
-          createtime: '2021-11-01 14:53:03'
-        }
-      ],
       rulesSearch: {
         content: [
           { min: 1, max: 15, message: '长度在 1 到 15 个字符', trigger: 'change' },

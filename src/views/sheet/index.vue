@@ -1,39 +1,49 @@
 <template>
     <div class="app-sheet">
         <el-container class="cls-container cls-container-op">
-            <!-- <el-button type="primary" @click="showDialogTool()" style="padding: 9px 12px;">
-                <i class="el-icon-plus"></i>
-                添加
-            </el-button> -->
             <el-col style="white-space: nowrap;">
                 <el-form :model="search" :rules="rulesSearch" ref="searchForm" :inline="true">
-                    <el-form-item prop="datetime">
-                        <el-date-picker
-                            v-model="search.datetime"
-                            type="datetimerange"
-                            value-format="yyyy-MM-dd HH:mm:ss"
-                            range-separator="至"
-                            start-placeholder="开始日期"
-                            end-placeholder="结束日期">
-                        </el-date-picker>
-                    </el-form-item>
-                    <el-form-item prop="content">
-                        <el-input v-model="search.content" clearable placeholder="用户账号、融码名称或者备注"></el-input>
-                    </el-form-item>
-                        <el-button icon="el-icon-search" round @click="submitSearchForm('searchForm')"></el-button>
-                    </el-form>
+                  <el-button type="success" @click="reload" style="padding: 9px 12px;" title="刷新">
+                    <i class="el-icon-refresh"></i>
+                  </el-button>
+                  <el-button type="primary" @click="showDialogTool()" style="padding: 9px 12px;">
+                      <i class="el-icon-plus"></i>
+                      添加
+                  </el-button>
+                  <el-form-item prop="datetime">
+                      <el-date-picker
+                          v-model="search.datetime"
+                          type="datetimerange"
+                          value-format="yyyy-MM-dd HH:mm:ss"
+                          range-separator="至"
+                          start-placeholder="开始日期"
+                          end-placeholder="结束日期">
+                      </el-date-picker>
+                  </el-form-item>
+                  <el-form-item prop="content">
+                      <el-input v-model="search.content" clearable placeholder="账号、表单名称或备注"></el-input>
+                  </el-form-item>
+                  <el-button icon="el-icon-search" round @click="submitSearchForm('searchForm')"></el-button>
+                </el-form>
             </el-col>
         </el-container>
         <el-container class="cls-container cls-container-tab">
         <el-table
-            :data="tableData"
+            ref="multipleTable"
+            :data="data.list"
             row-key="id"
             border
             default-expand-all
+            @selection-change="handleSelectionChange"
             :cell-style="{padding:'0px'}"
             :row-style="{height:'34px'}"
             :tree-props="{children: 'childs'}"
             style="width: 100%">
+            <el-table-column
+              align="center"
+              type="selection"
+              width="55">
+            </el-table-column>
             <el-table-column
             align="center"
             prop="id"
@@ -48,11 +58,11 @@
             </el-table-column>
             <el-table-column
             align="center"
-            prop="url_addr"
-            label="表单活码"
+            prop="short_url_text"
+            label="表单连接"
             width="240">
               <template slot-scope="scope">
-                <el-input placeholder="请输入内容" v-model="scope.row.url_addr" :id="'link' + scope.row.id" class="cls-tb-url-input">
+                <el-input placeholder="请输入内容" v-model="scope.row.short_url_text" :id="'link' + scope.row.id" class="cls-tb-url-input">
                   <template slot="append">
                     <el-button
                      title="复制连接"
@@ -89,31 +99,26 @@
             width="70">
             </el-table-column>
             <el-table-column
-            align="center"
-            prop="createtime"
-            label="创建时间"
-            width="140">
+              align="center"
+              prop="status"
+              label="状态"
+              width="100">
+              <template slot-scope="scope">
+                <el-switch
+                  v-model="scope.row.status"
+                  :value="scope.row.status"
+                  :active-value="1"
+                  :inactive-value="0"
+                  @change="handleEditStatus(scope.$index, scope.row)"
+                  active-color="#13ce66">
+                </el-switch>
+              </template>
             </el-table-column>
             <el-table-column
             align="center"
             prop="updatetime"
             label="修改时间"
             width="140">
-            </el-table-column>
-            <el-table-column
-            align="center"
-            prop="status"
-            label="状态"
-            width="100">
-              <template slot-scope="scope">
-                  <el-switch
-                  v-model="scope.row.status"
-                  :value="scope.row.status"
-                  :active-value="1"
-                  :inactive-value="2"
-                  active-color="#13ce66">
-                  </el-switch>
-              </template>
             </el-table-column>
             <el-table-column
             align="center"
@@ -153,24 +158,34 @@
         </el-table>
         </el-container>
         <el-container class="cls-container cls-container-page">
-        <el-col>
-            <el-pagination
-            background
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            :current-page.sync="currentPage"
-            :page-size="100"
-            layout="total, prev, pager, next"
-            :total="999">
-            </el-pagination>
-        </el-col>
+          <el-col :sm="4" style="text-align:left;">
+            <el-popconfirm
+              confirm-button-text='确定'
+              cancel-button-text='不用了'
+              icon="el-icon-info"
+              icon-color="red"
+              title="你确定要删除该条内容吗？"
+              @confirm="handleDeleteBatch()">
+                <el-button slot="reference" type="danger">批量删除</el-button>
+              </el-popconfirm>
+          </el-col>
+          <el-col>
+              <el-pagination
+              background
+              @current-change="handleCurrentChange"
+              :current-page.sync="data.page"
+              :page-size="data.limit"
+              layout="total, prev, pager, next"
+              :total="data.total">
+              </el-pagination>
+          </el-col>
         </el-container>
         <!-- 编辑：弹窗方式 -->
         <dialogTool ref="dialogTool" :data='dialogToolDataDefault'>
             <el-lee-edit ref="thisForm" slot="slotEditForm" :data='dialogToolDataDefault' :result='result'></el-lee-edit>
         </dialogTool>
         <!-- 详情：抽屉方式 -->
-        <el-lee-detail ref="codesDetail" :result="result" :drawer="drawer"></el-lee-detail>
+        <el-lee-detail ref="codesDetail" :result="row" :drawer="drawer"></el-lee-detail>
     </div>
 </template>
 
@@ -188,6 +203,7 @@
 </style>
 
 <script>
+import { mapActions } from 'vuex'
 import Clipboard from 'clipboard'
 import detail from '@/views/sheet/detail'
 import edit from '@/views/sheet/edit'
@@ -200,7 +216,18 @@ export default {
     'el-lee-edit': edit,
     'el-lee-list': list
   },
+  // 局部刷新
+  inject: ['reload'],
+  mounted () {
+    // 绑定数据
+    this.getList()
+  },
   methods: {
+    ...mapActions([
+      'getFormList',
+      'editForm',
+      'delForm'
+    ]),
     cancel () {
       this.$refs.thisForm.reset()
     },
@@ -217,10 +244,13 @@ export default {
       })
     },
     // 显示表单
-    // showDialogTool () {
-    //   // 显示dialog
-    //   this.$refs.dialogTool.showDialog()
-    // },
+    showDialogTool () {
+      // 显示dialog
+      this.$refs.dialogTool.showDialog()
+      this.$nextTick(() => {
+        this.$refs.thisForm.disabled = false
+      })
+    },
     // 编辑事件，触发后直接提取column数据传到dialog
     handleEdit (index, column) {
       this.dialogToolDataDefault.title = '修改'
@@ -229,44 +259,90 @@ export default {
       // 重置set表单的值,这里有个坑，父组件调用子组件方法要加一个延时，因为子组件还没渲染
       setTimeout(() => {
         this.$refs.thisForm.setData(column)
+        this.$refs.thisForm.disabled = !!column.uid
+      })
+    },
+    // 修改状态
+    handleEditStatus (index, column) {
+      this.editForm({
+        id: column.id,
+        name: column.name,
+        url: column.url,
+        image: column.image,
+        short_url: column.short_url,
+        status: column.status
+      }).then((res) => {
+        this.$message.success(res.msg)
+      }).catch(() => {
+        column.status = column.status === 1 ? 0 : 1
+        this.data.list[index] = column
       })
     },
     // 详情抽屉
     handleDoc (index, column) {
       // this.drawer = true
       this.$refs.codesDetail.showDraw()
-      this.result = column
+      this.row = column
     },
-    // 按钮跳转
+    // 按钮跳转到formlog页面
     handleLink (index, column) {
-      this.$router.push({name: 'sheet/list', params: {'parent_id': column.id}})
+      // name : sheet/form 为router/index.js里面的name
+      this.$router.push({name: 'sheet/form', params: {'parent_id': column.id}})
     },
     // 删除事件
     handleDelete (index, column) {
-      console.log(index)
-      console.log(column)
+      this.delForm({
+        ids: column.id
+      }).then((res) => {
+        this.$message.success(res.msg)
+        this.reload() // 局部刷新
+      })
+    },
+    // 批量选中
+    handleSelectionChange (row) {
+      this.multipleSelection = row
+    },
+    // 批量删除
+    handleDeleteBatch () {
+      if (this.multipleSelection.length) {
+        let ids = []
+        this.multipleSelection.forEach(row => {
+          ids.push(row.id)
+        })
+        this.delForm({
+          ids: ids
+        }).then((res) => {
+          this.$message.success(res.msg)
+          this.reload() // 局部刷新
+        })
+      } else {
+        this.$message.error('请选择要删除的数据')
+      }
     },
     // search form提交方法
     submitSearchForm (formName) {
       this.$refs[formName]
         .validate()
         .then(res => {
-          console.log(this.search)
-          // this.fresh()
-        })
-        // eslint-disable-next-line handle-callback-err
-        .catch(err => {
-          console.log(err)
-          console.log('error submit!!')
+          this.getFormList({
+            search: this.search,
+            page: 1
+          }).then((res) => {
+            this.data = res.data
+          })
         })
     },
-    handleSizeChange (val) {
-      console.log(`每页 ${val} 条`)
+    // 翻页
+    handleCurrentChange (page) {
+      this.getList()
     },
-    handleCurrentChange (val) {
-      console.log(`当前页: ${val}`)
-      this.page = val
-      // this.getDataText()
+    // 请求数据统一调用方法
+    getList () {
+      this.getFormList({
+        page: this.data.page
+      }).then((res) => {
+        this.data = res.data
+      })
     }
   },
   data () {
@@ -275,80 +351,35 @@ export default {
         title: '添加',
         visible: false
       },
-      currentPage: 1,
+      multipleSelection: [],
+      data: {
+        page: 1,
+        limit: 1,
+        total: 0,
+        list: []
+      },
+      row: {},
       search: {
         datetime: '', // ['2021-11-01 23:59:59', '2021-11-03 00:00:01'],
         content: ''
       },
       drawer: false,
       result: {
-        id: '',
-        uid: '',
+        id: 'add',
+        uid: 0,
         username: '',
         name: '',
-        status: 0,
+        status: 1,
         short_url: '',
-        url_addr: '',
-        is_delete: '',
         total_limit: 0,
-        total: 0,
         remark: '',
         url: '', // 填写完后跳转地址
+        image_id: 0, // 填写完后显示二维码ID
         image: '', // 填写完后显示二维码
-        extend: '', // 未知
         is_realname: 1, // 是否填写姓名
         is_phone: 1, // 是否填写电话
-        is_image: 0, // 是否上传截图
-        admin_id: '',
-        updatetime: '',
-        createtime: ''
+        is_image: 0 // 是否上传截图
       },
-      tableData: [
-        {
-          id: '1234',
-          uid: '2',
-          username: '13880789545',
-          name: '测试一个表单',
-          status: 1,
-          short_url: 'http://i8jo.cn',
-          url_addr: 'http://i8jo.cn/xQD1',
-          is_delete: 0,
-          total_limit: 1,
-          total: 1089,
-          remark: '备注一个事实',
-          url: 'http://www.baidu.com',
-          image: '',
-          extend: '',
-          is_realname: 1,
-          is_phone: 1,
-          is_image: 0,
-          admin_id: '1',
-          updatetime: '2021-11-04 01:53:03',
-          createtime: '2021-11-01 14:53:03'
-        },
-        {
-          id: '321',
-          uid: '2',
-          username: '13880789545',
-          name: '测试一个表单222',
-          status: 1,
-          short_url: 'http://s0o2.cn',
-          url_addr: 'http://s0o2.cn/xQD22',
-          s_delete: 0,
-          total_limit: '99',
-          total: 1089,
-          remark: '备注一个事实',
-          url: 'http://www.baidu.com',
-          image: '',
-          extend: '',
-          is_realname: 1,
-          is_phone: 1,
-          is_image: 1,
-          admin_id: 1,
-          updatetime: '2021-11-04 01:53:03',
-          createtime: '2021-11-01 14:53:03'
-        }
-      ],
       rulesSearch: {
         content: [
           { min: 1, max: 15, message: '长度在 1 到 15 个字符', trigger: 'blur' },

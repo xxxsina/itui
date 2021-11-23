@@ -10,7 +10,7 @@ import { getToken } from '@/utils/auth'
 // 创建 axios 实例
 let service = axios.create({
   withCredentials: true, // 设置跨域访问
-  timeout: 500,
+  timeout: 5000,
   headers: {
     'Content-Type': 'application/json;charset:utf-8'
   }
@@ -76,7 +76,7 @@ service.interceptors.response.use(
   (error) => {
     if (error.response) {
       Message({
-        message: error.message,
+        message: error.response.data.message,
         type: 'error',
         duration: 5 * 1000
       })

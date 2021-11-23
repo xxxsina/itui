@@ -112,10 +112,10 @@ export default {
   data () {
     return {
       // icon data default
-      iconToolDataDefault: {
-        icon: this.icon,
-        visible: false
-      },
+      // iconToolDataDefault: {
+      //   icon: this.icon,
+      //   visible: false
+      // },
       groups: [],
       // 表单验证规则
       rules: {

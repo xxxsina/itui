@@ -73,14 +73,14 @@
         </el-table-column>
         <el-table-column
           align="center"
-          prop="createtime"
-          label="创建时间"
+          prop="updatetime"
+          label="修改时间"
           width="200">
         </el-table-column>
         <el-table-column
           align="center"
-          prop="updatetime"
-          label="修改时间"
+          prop="createtime"
+          label="创建时间"
           width="200">
         </el-table-column>
         <el-table-column
@@ -170,6 +170,9 @@ export default {
         status: column.status
       }).then((res) => {
         this.$message.success(res.msg)
+      }).catch(() => {
+        column.status = column.status === 1 ? 0 : 1
+        this.data.list[index] = column
       })
     },
     // 删除事件

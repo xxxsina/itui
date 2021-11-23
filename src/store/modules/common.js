@@ -1,4 +1,4 @@
-import { getAuthGroup, getPeriodConfig, getShortHostsConfig } from '@/api/backend/common'
+import { getAuthGroup, getPeriodConfig, getShortHostsConfig, getVipConfig } from '@/api/backend/common'
 
 const common = {
   state: {
@@ -31,6 +31,16 @@ const common = {
     getShortHostsConfig ({ commit }) {
       return new Promise((resolve, reject) => {
         getShortHostsConfig().then(response => {
+          resolve(response)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    // 获取vip
+    getVipConfig ({ commit }) {
+      return new Promise((resolve, reject) => {
+        getVipConfig().then(response => {
           resolve(response)
         }).catch(error => {
           reject(error)

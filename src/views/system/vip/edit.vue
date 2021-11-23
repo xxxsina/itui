@@ -93,7 +93,12 @@ export default {
       this.$refs[formName]
         .validate()
         .then(res => {
-          this.result.rules = JSON.parse(this.result.rules_farmat)
+          try {
+            this.result.rules = JSON.parse(this.result.rules_farmat)
+          } catch (err) {
+            this.$message.error('规则数据不合法[JSON]')
+            return false
+          }
           delete this.result.rules_farmat
           // 提交接口
           this.editAuthVip(this.result).then((res) => {

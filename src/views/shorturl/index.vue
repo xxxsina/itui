@@ -40,6 +40,7 @@
             :tree-props="{children: 'childs'}"
             style="width: 100%">
             <el-table-column
+              align="center"
               type="selection"
               width="55">
             </el-table-column>
@@ -131,8 +132,8 @@
             </el-table-column>
             <el-table-column
             align="center"
-            prop="createtime"
-            label="创建时间"
+            prop="updatetime"
+            label="修改时间"
             width="140">
             </el-table-column>
             <el-table-column
@@ -193,7 +194,7 @@
             <el-lee-edit ref="thisForm" slot="slotEditForm" :data='dialogToolDataDefault' :result='result'></el-lee-edit>
         </dialogTool>
         <!-- 详情：抽屉方式 -->
-        <el-lee-detail ref="codesDetail" :result="row" :drawer="drawer"></el-lee-detail>
+        <el-lee-detail ref="infoDetail" :result="row" :drawer="drawer"></el-lee-detail>
     </div>
 </template>
 
@@ -282,12 +283,15 @@ export default {
         status: column.status
       }).then((res) => {
         this.$message.success(res.msg)
+      }).catch(() => {
+        column.status = column.status === 1 ? 0 : 1
+        this.data.list[index] = column
       })
     },
     // 详情抽屉
     handleDoc (index, column) {
       // this.drawer = true
-      this.$refs.codesDetail.showDraw()
+      this.$refs.infoDetail.showDraw()
       this.row = column
     },
     // 删除事件
@@ -323,7 +327,7 @@ export default {
         .then(res => {
           this.getShortUrlList({
             search: this.search,
-            page: this.data.page
+            page: 1
           }).then((res) => {
             this.data = res.data
           })

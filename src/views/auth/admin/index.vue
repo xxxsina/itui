@@ -13,7 +13,7 @@
           <el-form-item prop="content">
             <el-input v-model="search.content" clearable placeholder="账号或者昵称"></el-input>
           </el-form-item>
-            <el-button icon="el-icon-search" round @click="getList"></el-button>
+            <el-button icon="el-icon-search" round @click="submitSearchForm('searchForm')"></el-button>
         </el-form>
       </el-col>
     </el-container>
@@ -207,6 +207,9 @@ export default {
         status: column.status
       }).then((res) => {
         this.$message.success(res.msg)
+      }).catch(() => {
+        column.status = column.status === 1 ? 0 : 1
+        this.data.list[index] = column
       })
     },
     // 删除事件
@@ -240,6 +243,19 @@ export default {
         this.$message.error('请选择要删除的数据')
       }
     },
+    // search form提交方法
+    submitSearchForm (formName) {
+      this.$refs[formName]
+        .validate()
+        .then(res => {
+          this.getAdminList({
+            search: this.search,
+            page: 1
+          }).then((res) => {
+            this.data = res.data
+          })
+        })
+    },
     // 翻页
     handleCurrentChange (page) {
       this.getList()
@@ -247,7 +263,6 @@ export default {
     // 请求数据统一调用方法
     getList () {
       this.getAdminList({
-        search: this.search,
         page: this.data.page
       }).then((res) => {
         this.data = res.data

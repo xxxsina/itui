@@ -162,8 +162,8 @@ export default {
               p: this.result.password,
               c: true
             }
-            // 这里的86400是天
-            this.$cookie.set('memberMe', JSON.stringify(memberMe), 86400)
+            // 这里的7是天
+            this.$cookie.set('memberMe', JSON.stringify(memberMe), 7)
           } else {
             this.clearCookie()
           }

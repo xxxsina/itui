@@ -4,7 +4,7 @@
             <el-form-item label="" prop="id" style="margin:0;">
                 <input type="hidden" :value="result.id" />
             </el-form-item>
-            <el-form-item label="渠道二维码" prop="url">
+            <!-- <el-form-item label="渠道二维码" prop="url">
                 <el-upload
                 class="avatar-uploader"
                 action="https://jsonplaceholder.typicode.com/posts/"
@@ -14,18 +14,37 @@
                     <img v-if="result.url" :src="result.url" class="avatar">
                     <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                 </el-upload>
+            </el-form-item> -->
+            <el-form-item label="渠道二维码" prop="url">
+              <el-col :sm="4">
+                <el-upload
+                class="avatar-uploader"
+                name="image"
+                list-type="picture-card"
+                :data="params"
+                :action="uploadLink"
+                :show-file-list="false"
+                :on-success="handleAvatarSuccess"
+                :before-upload="beforeAvatarUpload">
+                    <img v-if="imageUrl" :src="imageUrl" class="avatar">
+                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                </el-upload>
+              </el-col>
+              <el-col :sm="4" class="cls-remove" v-if="imageUrl">
+                <el-button icon="el-icon-delete" circle @click="handleRemove"></el-button>
+              </el-col>
             </el-form-item>
             <el-form-item label="状态" prop="status">
                 <el-radio-group v-model="result.status">
                     <el-radio :label="1">正常</el-radio>
-                    <el-radio :label="2">禁止</el-radio>
+                    <el-radio :label="0">禁止</el-radio>
                 </el-radio-group>
             </el-form-item>
             <el-form-item label="访问上限" prop="total_limit">
                 <el-input-number class="cls-input-number" v-model="result.total_limit" :min="0" :max="1000000000" placeholder="可以不填写"></el-input-number>
             </el-form-item>
             <el-form-item label="访问总量" prop="total">
-                <el-input-number class="cls-input-number" disabled v-model="result.total" :min="0" :max="1000000000" placeholder="可以不填写"></el-input-number>
+                <el-input-number class="cls-input-number" v-model="result.total" :min="0" :max="1000000000" placeholder="可以不填写"></el-input-number>
             </el-form-item>
             <el-form-item label="备注" prop="remark">
                 <el-input type="textarea" :rows="3" v-model="result.remark" clearable placeholder="可以不填写"></el-input>
@@ -46,6 +65,8 @@
     cursor: pointer;
     position: relative;
     overflow: hidden;
+    display: block;
+    text-align: center;
 }
 .avatar-uploader >>> .el-upload:hover {
     border-color: #409EFF;
@@ -53,28 +74,42 @@
 .avatar-uploader-icon {
     font-size: 28px;
     color: #8c939d;
-    width: 60px;
-    height: 60px;
-    line-height: 60px;
     text-align: center;
 }
 .avatar {
-    width: 60px;
-    height: 60px;
+    width: 148px;
+    height: 148px;
     display: block;
+}
+.cls-remove {
+  margin-top: 110px;
+  margin-left: 110px;
+  position: absolute;
+  opacity: 0.6;
+}
+.cls-remove button {
+  border: 1px #c0c4cc dashed;
 }
 .cls-input-number {
     width: unset;
 }
+.form-footer {
+    margin-top: 10px;
+}
 </style>
 
 <script>
+import { mapActions } from 'vuex'
+import baseUrl from '@/api/baseUrl'
 
 export default {
   name: 'edit-form',
   props: ['data', 'result'],
   inject: ['reload'],
   methods: {
+    ...mapActions([
+      'editJumpUrl'
+    ]),
     // 重置表单数据
     reset () {
       this.$refs.thisForm.resetFields()
@@ -87,8 +122,11 @@ export default {
       })
       // 重试挨个赋值，这种方式就可以不绑定父组件了
       if (row) {
-        for (let key in row) {
+        for (let key in this.result) {
           this.result[key] = row[key]
+        }
+        if (this.result.url) {
+          this.imageUrl = this.G.imgHost + this.result.url
         }
       } else if (row === false && this.result.id !== 'add') {
         // 修改数据之后立即使用这个方法，获取更新后的 DOM
@@ -121,33 +159,41 @@ export default {
       return (isPNG || isJPG) && isLt2M
     },
     handleAvatarSuccess (res, file) {
-      console.log(file)
+      this.result.url = res.data.filePath
+      this.result.image_id = res.data.id
       this.imageUrl = URL.createObjectURL(file.raw)
+    },
+    // 移除图片
+    handleRemove () {
+      this.result.url = ''
+      this.imageUrl = ''
     },
     // form提交方法
     submitForm (formName) {
       this.$refs[formName]
         .validate()
         .then(res => {
-          console.log(this.result)
-          this.fresh()
-        })
-        // eslint-disable-next-line handle-callback-err
-        .catch(err => {
-          if (err.message) {
-            this.$message.error(err.message)
-          }
-          console.log(err)
-          console.log('error submit!!')
+          // 提交接口
+          this.editJumpUrl(this.result).then((res) => {
+            this.$message.success(res.msg)
+            this.fresh() // 局部刷新
+          }).catch(() => {
+            this.fresh()
+          })
         })
     }
   },
   data () {
     return {
+      uploadLink: baseUrl + '/file/upload',
+      imageUrl: '',
+      params: {
+        type: 'qrcode'
+      },
       // 表单验证规则
       rulesForm: {
         url: [
-          { required: true, message: '请填写渠道连接', trigger: 'change' }
+          { required: true, message: '请上传渠道二维码', trigger: 'change' }
         ],
         status: [
           { required: true, message: '请选择状态', trigger: 'change' }

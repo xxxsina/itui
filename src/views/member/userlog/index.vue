@@ -134,7 +134,7 @@ export default {
           // console.log(this.search)
           this.getUserLogList({
             search: this.search,
-            page: this.data.page
+            page: 1
           }).then((res) => {
             this.data = res.data
           })

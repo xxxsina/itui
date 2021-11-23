@@ -7,31 +7,39 @@
             <el-form-item label="账号" prop="username">
                 <el-input v-model="result.username" clearable placeholder="请填写手机号"></el-input>
             </el-form-item>
+            <el-form-item label="状态" prop="status">
+                <el-radio-group v-model="result.status">
+                    <el-radio :label="1">正常</el-radio>
+                    <el-radio :label="0">禁止</el-radio>
+                </el-radio-group>
+            </el-form-item>
             <el-form-item label="昵称" prop="nickname">
-                <el-input v-model="result.nickname" clearable placeholder="昵称"></el-input>
+                <el-input v-model="result.profile.nickname" clearable placeholder="昵称"></el-input>
             </el-form-item>
             <el-form-item label="头像" prop="avatar">
-                <el-upload
-                class="avatar-uploader"
-                action="https://jsonplaceholder.typicode.com/posts/"
-                :show-file-list="false"
-                :on-success="handleAvatarSuccess"
-                :before-upload="beforeAvatarUpload">
-                    <img v-if="result.avatar" :src="result.avatar" class="avatar">
-                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-                </el-upload>
+                <el-col :sm="4">
+                  <el-upload
+                  class="avatar-uploader"
+                  name="image"
+                  list-type="picture-card"
+                  :data="params"
+                  :action="uploadLink"
+                  :show-file-list="false"
+                  :on-success="handleAvatarSuccess"
+                  :before-upload="beforeAvatarUpload">
+                      <img v-if="imageUrl" :src="imageUrl" class="avatar">
+                      <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                  </el-upload>
+                </el-col>
+                <el-col :sm="4" class="cls-remove" v-if="imageUrl">
+                  <el-button icon="el-icon-delete" circle @click="handleRemove"></el-button>
+                </el-col>
             </el-form-item>
             <el-form-item label="密码" prop="password">
               <el-input type="password" v-model="result.password" placeholder="密码为6至15个字符之间" autocomplete="off"></el-input>
             </el-form-item>
             <el-form-item label="确认密码" prop="rePassword">
               <el-input type="password" v-model="result.rePassword" placeholder ="密码为6至15个字符之间" autocomplete="off"></el-input>
-            </el-form-item>
-            <el-form-item label="状态" prop="status">
-                <el-radio-group v-model="result.status">
-                    <el-radio :label="1">正常</el-radio>
-                    <el-radio :label="2">禁止</el-radio>
-                </el-radio-group>
             </el-form-item>
         </el-form>
 
@@ -49,35 +57,55 @@
     cursor: pointer;
     position: relative;
     overflow: hidden;
-  }
-  .avatar-uploader >>> .el-upload:hover {
+    display: block;
+    text-align: center;
+}
+.avatar-uploader >>> .el-upload:hover {
     border-color: #409EFF;
-  }
-  .avatar-uploader-icon {
+}
+.avatar-uploader-icon {
     font-size: 28px;
     color: #8c939d;
-    width: 60px;
-    height: 60px;
-    line-height: 60px;
     text-align: center;
-  }
-  .avatar {
-    width: 60px;
-    height: 60px;
+}
+.avatar {
+    width: 148px;
+    height: 148px;
     display: block;
-  }
+}
+.cls-remove {
+  margin-top: 110px;
+  margin-left: 110px;
+  position: absolute;
+  opacity: 0.6;
+}
+.cls-remove button {
+  border: 1px #c0c4cc dashed;
+}
+.cls-input-number {
+    width: unset;
+}
+.form-footer {
+    margin-top: 10px;
+}
 </style>
 
 <script>
+import baseUrl from '@/api/baseUrl'
+import { mapActions } from 'vuex'
 
 export default {
   name: 'edit-form',
   props: ['data', 'result', 'formWidthSize'],
   inject: ['reload'],
   methods: {
+    ...mapActions([
+      'editUser'
+    ]),
     // 重置表单数据
     reset () {
       this.$refs.thisForm.resetFields()
+      this.imageUrl = ''
     },
     // 创建完form后，重置参数
     setData (row) {
@@ -87,8 +115,17 @@ export default {
       })
       // 重试挨个赋值，这种方式就可以不绑定父组件了
       if (row) {
-        for (let key in row) {
-          this.result[key] = row[key]
+        for (let key in this.result) {
+          if (key === 'profile') {
+            for (let k in this.result.profile) {
+              this.result[key][k] = row[key][k]
+            }
+          } else {
+            this.result[key] = row[key]
+          }
+        }
+        if (this.result.profile.avatar) {
+          this.imageUrl = this.G.imgHost + this.result.profile.avatar
         }
       } else if (row === false && this.result.id !== 'add') {
         // 修改数据之后立即使用这个方法，获取更新后的 DOM
@@ -120,33 +157,44 @@ export default {
 
       return (isPNG || isJPG) && isLt2M
     },
+    // 上传图片成功回调
     handleAvatarSuccess (res, file) {
-      console.log(file)
+      this.result.profile.avatar = res.data.filePath
+      this.result.image_id = res.data.id
       this.imageUrl = URL.createObjectURL(file.raw)
+    },
+    // 移除图片
+    handleRemove () {
+      this.result.profile.avatar = ''
+      this.imageUrl = ''
     },
     // form提交方法
     submitForm (formName) {
       this.$refs[formName]
         .validate()
         .then(res => {
-          console.log(this.result)
-          this.fresh()
-        })
-        // eslint-disable-next-line handle-callback-err
-        .catch(err => {
-          console.log(err)
-          console.log('error submit!!')
+          // 提交接口
+          this.editUser(this.result).then((res) => {
+            this.$message.success(res.msg)
+            this.fresh() // 局部刷新
+          }).catch(() => {
+            this.fresh()
+          })
         })
     }
   },
   data () {
     return {
+      uploadLink: baseUrl + '/file/upload',
       // icon data default
-      iconToolDataDefault: {
-        icon: this.icon,
-        visible: false
-      },
+      // iconToolDataDefault: {
+      //   icon: this.icon,
+      //   visible: false
+      // },
       imageUrl: '',
+      params: {
+        type: 'user'
+      },
       // 表单验证规则
       rules: {
         username: {

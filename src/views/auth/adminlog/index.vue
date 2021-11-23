@@ -133,7 +133,7 @@ export default {
         .then(res => {
           this.getAdminLogList({
             search: this.search,
-            page: this.data.page
+            page: 1
           }).then((res) => {
             this.data = res.data
           })

@@ -1,12 +1,15 @@
 <template>
     <div class="app-codes-qrcode-channel">
         <el-container class="cls-container cls-container-op">
-            <!-- <el-button type="primary" @click="showDialogTool()" style="padding: 9px 12px;">
-                <i class="el-icon-plus"></i>
-                添加
-            </el-button> -->
             <el-col style="white-space: nowrap;">
                 <el-form :model="search" :rules="rulesSearch" ref="searchForm" :inline="true">
+                    <el-button type="success" @click="reload" style="padding: 9px 12px;" title="刷新">
+                      <i class="el-icon-refresh"></i>
+                    </el-button>
+                    <el-button type="primary" @click="showDialogTool()" style="padding: 9px 12px;">
+                        <i class="el-icon-plus"></i>
+                        添加
+                    </el-button>
                     <el-form-item prop="datetime">
                         <el-date-picker
                             v-model="search.datetime"
@@ -26,14 +29,21 @@
         </el-container>
         <el-container class="cls-container cls-container-tab">
         <el-table
-            :data="tableData"
+            ref="multipleTable"
+            :data="data.list"
             row-key="id"
             border
             default-expand-all
+            @selection-change="handleSelectionChange"
             :cell-style="{padding:'0px'}"
             :row-style="{height:'34px'}"
             :tree-props="{children: 'childs'}"
             style="width: 100%">
+            <el-table-column
+              align="center"
+              type="selection"
+              width="55">
+            </el-table-column>
             <el-table-column
             align="center"
             prop="id"
@@ -48,7 +58,7 @@
               <template slot-scope="scope">
                 <el-image
                   style="width: 100px; height: 100px"
-                  :src="scope.row.url"
+                  :src="G.imgHost + scope.row.url"
                   fit="contain">
                 </el-image>
               </template>
@@ -73,18 +83,6 @@
             </el-table-column>
             <el-table-column
             align="center"
-            prop="createtime"
-            label="创建时间"
-            width="140">
-            </el-table-column>
-            <el-table-column
-            align="center"
-            prop="updatetime"
-            label="修改时间"
-            width="140">
-            </el-table-column>
-            <el-table-column
-            align="center"
             prop="status"
             label="状态"
             width="100">
@@ -93,10 +91,17 @@
                   v-model="scope.row.status"
                   :value="scope.row.status"
                   :active-value="1"
-                  :inactive-value="2"
+                  :inactive-value="0"
+                  @change="handleEditStatus(scope.$index, scope.row)"
                   active-color="#13ce66">
                   </el-switch>
               </template>
+            </el-table-column>
+            <el-table-column
+            align="center"
+            prop="updatetime"
+            label="修改时间"
+            width="140">
             </el-table-column>
             <el-table-column
             align="center"
@@ -130,15 +135,27 @@
         </el-container>
         <el-container class="cls-container cls-container-page">
         <el-col>
-            <el-pagination
-            background
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            :current-page.sync="currentPage"
-            :page-size="100"
-            layout="total, prev, pager, next"
-            :total="999">
-            </el-pagination>
+            <el-col :sm="4" style="text-align:left;">
+            <el-popconfirm
+              confirm-button-text='确定'
+              cancel-button-text='不用了'
+              icon="el-icon-info"
+              icon-color="red"
+              title="你确定要删除该条内容吗？"
+              @confirm="handleDeleteBatch()">
+                <el-button slot="reference" type="danger">批量删除</el-button>
+              </el-popconfirm>
+          </el-col>
+          <el-col>
+              <el-pagination
+              background
+              @current-change="handleCurrentChange"
+              :current-page.sync="data.page"
+              :page-size="data.limit"
+              layout="total, prev, pager, next"
+              :total="data.total">
+              </el-pagination>
+          </el-col>
         </el-col>
         </el-container>
         <!-- 编辑：弹窗方式 -->
@@ -159,6 +176,7 @@
 </style>
 
 <script>
+import { mapActions } from 'vuex'
 import Clipboard from 'clipboard'
 import edit from '@/views/codes/qrcode/channel/edit'
 
@@ -167,11 +185,18 @@ export default {
   components: {
     'el-lee-edit': edit
   },
-  created () {
-    console.log(this.$route.params)
-    // console.log(this.$route.query)
+  // 局部刷新
+  inject: ['reload'],
+  mounted () {
+    // 绑定数据
+    this.getList()
   },
   methods: {
+    ...mapActions([
+      'getJumpUrlList',
+      'editJumpUrl',
+      'delJumpUrl'
+    ]),
     cancel () {
       this.$refs.thisForm.reset()
     },
@@ -188,10 +213,10 @@ export default {
       })
     },
     // 显示表单
-    // showDialogTool () {
-    //   // 显示dialog
-    //   this.$refs.dialogTool.showDialog()
-    // },
+    showDialogTool () {
+      // 显示dialog
+      this.$refs.dialogTool.showDialog()
+    },
     // 编辑事件，触发后直接提取column数据传到dialog
     handleEdit (index, column) {
       this.dialogToolDataDefault.title = '修改'
@@ -202,32 +227,75 @@ export default {
         this.$refs.thisForm.setData(column)
       })
     },
+    // 修改状态
+    handleEditStatus (index, column) {
+      this.editJumpUrl({
+        id: column.id,
+        parent_id: column.parent_id,
+        url: column.url,
+        status: column.status
+      }).then((res) => {
+        this.$message.success(res.msg)
+      }).catch(() => {
+        column.status = column.status === 1 ? 0 : 1
+        this.data.list[index] = column
+      })
+    },
     // 删除事件
     handleDelete (index, column) {
-      console.log(index)
-      console.log(column)
+      this.delJumpUrl({
+        ids: column.id
+      }).then((res) => {
+        this.$message.success(res.msg)
+        this.reload() // 局部刷新
+      })
+    },
+    // 批量选中
+    handleSelectionChange (row) {
+      this.multipleSelection = row
+    },
+    // 批量删除
+    handleDeleteBatch () {
+      if (this.multipleSelection.length) {
+        let ids = []
+        this.multipleSelection.forEach(row => {
+          ids.push(row.id)
+        })
+        this.delJumpUrl({
+          ids: ids
+        }).then((res) => {
+          this.$message.success(res.msg)
+          this.reload() // 局部刷新
+        })
+      } else {
+        this.$message.error('请选择要删除的数据')
+      }
     },
     // search form提交方法
     submitSearchForm (formName) {
       this.$refs[formName]
         .validate()
         .then(res => {
-          console.log(this.search)
-          // this.fresh()
-        })
-        // eslint-disable-next-line handle-callback-err
-        .catch(err => {
-          console.log(err)
-          console.log('error submit!!')
+          this.getJumpUrlList({
+            search: this.search,
+            page: 1
+          }).then((res) => {
+            this.data = res.data
+          })
         })
     },
-    handleSizeChange (val) {
-      console.log(`每页 ${val} 条`)
+    // 翻页
+    handleCurrentChange (page) {
+      this.getList()
     },
-    handleCurrentChange (val) {
-      console.log(`当前页: ${val}`)
-      this.page = val
-      // this.getDataText()
+    // 请求数据统一调用方法
+    getList () {
+      this.getJumpUrlList({
+        search: this.search,
+        page: this.data.page
+      }).then((res) => {
+        this.data = res.data
+      })
     }
   },
   data () {
@@ -236,56 +304,29 @@ export default {
         title: '添加',
         visible: false
       },
-      currentPage: 1,
+      multipleSelection: [],
+      data: {
+        page: 1,
+        limit: 1,
+        total: 0,
+        list: []
+      },
       search: {
+        parent_id: this.$route.params.parent_id,
         datetime: '', // ['2021-11-01 23:59:59', '2021-11-03 00:00:01'],
         content: ''
       },
       drawer: false,
       result: {
-        id: '',
-        uid: '',
-        parent_id: '',
+        id: 'add',
+        uid: this.$route.params.uid,
+        parent_id: this.$route.params.parent_id,
         url: '',
-        status: 0,
-        is_delete: '',
+        status: 1,
         total_limit: '',
         total: '',
-        remark: '',
-        admin_id: '',
-        updatetime: '',
-        createtime: ''
+        remark: ''
       },
-      tableData: [
-        {
-          id: '1000000',
-          uid: '2',
-          parent_id: '1',
-          url: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
-          status: 0,
-          is_delete: 0,
-          total_limit: 9999,
-          total: 1089,
-          remark: '备注一个事实',
-          admin_id: '1',
-          updatetime: '2021-11-04 01:53:03',
-          createtime: '2021-11-01 14:53:03'
-        },
-        {
-          id: '99999999',
-          uid: '2',
-          parent_id: '1',
-          url: 'https://www.runoob.com/try/demo_source/paris.jpg',
-          status: 1,
-          is_delete: 0,
-          total_limit: 777777,
-          total: 91919,
-          remark: '备注一个事实',
-          admin_id: '1',
-          updatetime: '2021-11-04 01:53:03',
-          createtime: '2021-11-01 14:53:03'
-        }
-      ],
       rulesSearch: {
         content: [
           { min: 1, max: 15, message: '长度在 1 到 15 个字符', trigger: 'change' },

@@ -3,6 +3,9 @@
         <el-container class="cls-container cls-container-op">
             <el-col style="white-space: nowrap;">
                 <el-form :model="search" :rules="rulesSearch" ref="searchForm" :inline="true">
+                    <el-button type="success" @click="reload" style="padding: 9px 12px;" title="刷新">
+                      <i class="el-icon-refresh"></i>
+                    </el-button>
                     <el-button type="primary" @click="showDialogTool()" style="padding: 9px 12px;">
                         <i class="el-icon-plus"></i>
                         添加
@@ -20,13 +23,13 @@
                     <el-form-item prop="content">
                         <el-input v-model="search.content" clearable placeholder="账号或者昵称"></el-input>
                     </el-form-item>
-                        <el-button icon="el-icon-search" round @click="submitSearchForm('searchForm')"></el-button>
-                    </el-form>
+                    <el-button icon="el-icon-search" round @click="submitSearchForm('searchForm')"></el-button>
+                </el-form>
             </el-col>
         </el-container>
         <el-container class="cls-container cls-container-tab">
         <el-table
-            :data="tableData"
+            :data="data.list"
             row-key="id"
             border
             default-expand-all
@@ -51,17 +54,17 @@
             </el-table-column>
             <el-table-column
             align="center"
-            prop="nickname"
+            prop="profile.nickname"
             label="昵称"
             width="200">
             </el-table-column>
             <el-table-column
             align="center"
-            prop="avatar"
+            prop="profile.avatar"
             label="头像"
             width="120">
             <template slot-scope="scope">
-                <el-avatar :size="40" :src="scope.row.avatar" @error="errorHandler">
+                <el-avatar :size="40" :src="G.imgHost + scope.row.profile.avatar">
                     <img :src="G.imgErrPath" />
                 </el-avatar>
             </template>
@@ -80,30 +83,51 @@
             </el-table-column>
             <el-table-column
             align="center"
-            prop="viptime"
+            prop="status"
+            label="状态"
+            width="100">
+              <template slot-scope="scope">
+                <el-switch
+                  v-model="scope.row.status"
+                  :value="scope.row.status"
+                  :active-value="1"
+                  :inactive-value="0"
+                  @change="handleEditStatus(scope.$index, scope.row)"
+                  active-color="#13ce66">
+                </el-switch>
+              </template>
+            </el-table-column>
+            <el-table-column
+            align="center"
+            prop="profile.vip_expire_status"
+            label="VIP过期状态"
+            width="100">
+              <template slot-scope="scope">
+                <el-tag size="small" type="success" v-if="scope.row.profile.vip_expire_status==1">正常</el-tag>
+                <el-tag size="small" type="danger" v-if="scope.row.profile.vip_expire_status==0">过期</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column
+            align="center"
+            prop="profile.vip_expire_text"
             label="VIP过期时间"
-            width="180">
+            width="200">
+              <template slot-scope="scope">
+                {{ scope.row.profile.vip_expire_text }}
+                <el-button
+                circle
+                title="修改"
+                type='success'
+                size="mini"
+                icon="el-icon-edit"
+                @click="handleEditVip(scope.$index, scope.row)"></el-button>
+              </template>
             </el-table-column>
             <el-table-column
             align="center"
             prop="createtime"
             label="注册时间"
             width="180">
-            </el-table-column>
-            <el-table-column
-            align="center"
-            prop="status"
-            label="状态"
-            width="100">
-            <template slot-scope="scope">
-                <el-switch
-                v-model="scope.row.status"
-                :value="scope.row.status"
-                :active-value="1"
-                :inactive-value="2"
-                active-color="#13ce66">
-                </el-switch>
-            </template>
             </el-table-column>
             <el-table-column
             align="center"
@@ -137,14 +161,13 @@
         <el-container class="cls-container cls-container-page">
         <el-col>
             <el-pagination
-            background
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            :current-page.sync="currentPage"
-            :page-size="100"
-            layout="total, prev, pager, next"
-            :total="999">
-            </el-pagination>
+              background
+              @current-change="handleCurrentChange"
+              :current-page.sync="data.page"
+              :page-size="data.limit"
+              layout="total, prev, pager, next"
+              :total="data.total">
+              </el-pagination>
         </el-col>
         </el-container>
 
@@ -153,6 +176,8 @@
         </dialogTool>
         <!-- 详情：抽屉方式 -->
         <el-lee-detail ref="infoDetail" :result="row" :drawer="drawer"></el-lee-detail>
+        <!-- vip编辑 -->
+        <el-lee-edit-vip ref="thisFormVip"></el-lee-edit-vip>
     </div>
 </template>
 
@@ -160,19 +185,30 @@
 </style>
 
 <script>
+import { mapActions } from 'vuex'
 import detail from '@/views/member/user/detail'
 import edit from '@/views/member/user/edit'
+import editVip from '@/views/member/user/edit.vip'
 
 export default {
   name: 'app-users-user',
   components: {
     'el-lee-detail': detail,
-    'el-lee-edit': edit
+    'el-lee-edit': edit,
+    'el-lee-edit-vip': editVip
+  },
+  // 局部刷新
+  inject: ['reload'],
+  mounted () {
+    // 绑定数据
+    this.getList()
   },
   methods: {
-    errorHandler () {
-      return true
-    },
+    ...mapActions([
+      'getUserList',
+      'editUser',
+      'delUser'
+    ]),
     cancel () {
       this.$refs.thisForm.reset()
     },
@@ -191,36 +227,64 @@ export default {
         this.$refs.thisForm.setData(column)
       })
     },
+    // 编辑VIP
+    handleEditVip (index, column) {
+      // 显示dialog
+      this.$refs.thisFormVip.showDialog()
+      setTimeout(() => {
+        this.$refs.thisFormVip.setData(column)
+      })
+    },
+    // 修改状态
+    handleEditStatus (index, column) {
+      this.editUser({
+        id: column.id,
+        username: column.username,
+        status: column.status
+      }).then((res) => {
+        this.$message.success(res.msg)
+      }).catch(() => {
+        column.status = column.status === 1 ? 0 : 1
+        this.data.list[index] = column
+      })
+    },
     handleDoc (index, column) {
       this.$refs.infoDetail.showDraw()
       this.row = column
     },
     // 删除事件
     handleDelete (index, column) {
-      console.log(index)
-      console.log(column)
+      this.delUser({
+        ids: column.id
+      }).then((res) => {
+        this.$message.success(res.msg)
+        this.reload() // 局部刷新
+      })
     },
     // search form提交方法
     submitSearchForm (formName) {
       this.$refs[formName]
         .validate()
         .then(res => {
-          console.log(this.search)
-          // this.fresh()
-        })
-        // eslint-disable-next-line handle-callback-err
-        .catch(err => {
-          console.log(err)
-          console.log('error submit!!')
+          this.getUserList({
+            search: this.search,
+            page: 1
+          }).then((res) => {
+            this.data = res.data
+          })
         })
     },
-    handleSizeChange (val) {
-      console.log(`每页 ${val} 条`)
+    // 翻页
+    handleCurrentChange (page) {
+      this.getList()
     },
-    handleCurrentChange (val) {
-      console.log(`当前页: ${val}`)
-      this.page = val
-      // this.getDataText()
+    // 请求数据统一调用方法
+    getList () {
+      this.getUserList({
+        page: this.data.page
+      }).then((res) => {
+        this.data = res.data
+      })
     }
   },
   data () {
@@ -229,60 +293,32 @@ export default {
         title: '添加',
         visible: false
       },
-      currentPage: 1,
+      data: {
+        page: 1,
+        limit: 1,
+        total: 0,
+        list: []
+      },
       search: {
         datetime: '', // ['2021-11-01 23:59:59', '2021-11-03 00:00:01'],
         content: ''
       },
       drawer: false,
       drawerSize: this.G.getDrawerSize(),
-      row: {},
+      row: {
+        profile: {}
+      },
       result: {
         id: 'add',
         username: '',
-        nickname: '',
-        avatar: '',
-        createtime: '',
-        joinip: '',
-        loginfailure: 0,
-        loginip: '',
-        logintime: '',
-        prevtime: '',
         status: 1,
-        viptime: ''
-      },
-      tableData: [
-        {
-          id: '1000000',
-          username: '13880789545',
-          nickname: 'xxxsina1111',
-          avatar: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
-          group_name: '超级管理员',
-          status: 2,
-          loginfailure: 2,
-          loginip: '127.0.0.111',
-          logintime: '2021-11-01 14:53:03',
-          prevtime: '2021-11-01 14:53:03',
-          viptime: '2021-11-01 14:53:03',
-          joinip: '192.168.999.222',
-          createtime: '2021-11-01 14:53:03'
-        },
-        {
-          id: '99999999',
-          username: '13880789545',
-          nickname: 'xxxsina2222',
-          avatar: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
-          group_name: '超级管理员',
-          status: 1,
-          loginfailure: 0,
-          loginip: '127.0.0.111',
-          logintime: '2021-11-01 14:53:03',
-          prevtime: '2021-11-01 14:53:03',
-          viptime: '2021-11-01 14:53:03',
-          joinip: '192.168.999.222',
-          createtime: '2021-11-01 14:53:03'
+        profile: {
+          nickname: '',
+          avatar: '',
+          vip_id: '',
+          vip_expire: ''
         }
-      ],
+      },
       rulesSearch: {
         content: [
           { min: 1, max: 15, message: '长度在 1 到 15 个字符', trigger: 'blur' },

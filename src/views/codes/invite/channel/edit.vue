@@ -17,7 +17,7 @@
                 <el-input-number class="cls-input-number" v-model="result.total_limit" :min="0" :max="1000000000" placeholder="可以不填写"></el-input-number>
             </el-form-item>
             <el-form-item label="访问总量" prop="total">
-                <el-input-number class="cls-input-number" disabled v-model="result.total" :min="0" :max="1000000000" placeholder="可以不填写"></el-input-number>
+                <el-input-number class="cls-input-number" v-model="result.total" :min="0" :max="1000000000" placeholder="可以不填写"></el-input-number>
             </el-form-item>
             <el-form-item label="备注" prop="remark">
                 <el-input type="textarea" :rows="3" v-model="result.remark" clearable placeholder="可以不填写"></el-input>
@@ -38,12 +38,16 @@
 </style>
 
 <script>
+import { mapActions } from 'vuex'
 
 export default {
   name: 'edit-form',
   props: ['data', 'result'],
   inject: ['reload'],
   methods: {
+    ...mapActions([
+      'editJumpUrl'
+    ]),
     // 重置表单数据
     reset () {
       this.$refs.thisForm.resetFields()
@@ -56,7 +60,7 @@ export default {
       })
       // 重试挨个赋值，这种方式就可以不绑定父组件了
       if (row) {
-        for (let key in row) {
+        for (let key in this.result) {
           this.result[key] = row[key]
         }
       } else if (row === false && this.result.id !== 'add') {
@@ -80,16 +84,13 @@ export default {
       this.$refs[formName]
         .validate()
         .then(res => {
-          console.log(this.result)
-          this.fresh()
-        })
-        // eslint-disable-next-line handle-callback-err
-        .catch(err => {
-          if (err.message) {
-            this.$message.error(err.message)
-          }
-          console.log(err)
-          console.log('error submit!!')
+          // 提交接口
+          this.editJumpUrl(this.result).then((res) => {
+            this.$message.success(res.msg)
+            this.fresh() // 局部刷新
+          }).catch(() => {
+            this.fresh()
+          })
         })
     }
   },

@@ -201,6 +201,9 @@ export default {
       }).then((res) => {
         this.$message.success(res.msg)
         this.reload() // 局部刷新
+      }).catch(() => {
+        column.ismenu = column.ismenu === 1 ? 0 : 1
+        this.data.list[index] = column
       })
     },
     // 请求数据统一调用方法

@@ -5,13 +5,10 @@
                 <input type="hidden" :value="result.id" />
             </el-form-item>
             <el-form-item label="账号" prop="username">
-                <el-input v-model="result.username" clearable placeholder="账号为手机号码"></el-input>
+                <el-input v-model="result.username" placeholder="用户账号"></el-input>
             </el-form-item>
             <el-form-item label="活码名称" prop="name">
                 <el-input v-model="result.name" clearable placeholder="名称不能超过15个字符"></el-input>
-            </el-form-item>
-            <el-form-item label="访问量" prop="total">
-                <el-input-number class="cls-input-number" v-model="result.total" :min="0" :max="1000000000" placeholder="可以不填写"></el-input-number>
             </el-form-item>
             <el-form-item label="展示方式" prop="smod">
               <el-radio-group v-model="result.smod">
@@ -23,9 +20,9 @@
                 <el-radio-group v-model="result.short_url">
                     <el-radio
                      v-for="(val, k) in shortUrls"
-                     :label="val"
+                     :label="val.host"
                      :key="k">
-                    {{ val }}
+                    {{ val.host }}
                     </el-radio>
                 </el-radio-group>
             </el-form-item>
@@ -34,6 +31,9 @@
                     <el-radio :label="1">正常</el-radio>
                     <el-radio :label="2">禁止</el-radio>
                 </el-radio-group>
+            </el-form-item>
+            <el-form-item label="访问量" prop="total">
+                <el-input-number class="cls-input-number" v-model="result.total" :min="0" :max="1000000000" placeholder="可以不填写"></el-input-number>
             </el-form-item>
             <el-form-item label="备注" prop="remark">
                 <el-input type="textarea" :rows="3" v-model="result.remark" clearable placeholder="可以不填写"></el-input>
@@ -48,41 +48,28 @@
 </template>
 
 <style scoped>
-.avatar-uploader >>> .el-upload {
-    border: 1px dashed #d9d9d9;
-    border-radius: 6px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-}
-.avatar-uploader >>> .el-upload:hover {
-    border-color: #409EFF;
-}
-.avatar-uploader-icon {
-    font-size: 28px;
-    color: #8c939d;
-    width: 60px;
-    height: 60px;
-    line-height: 60px;
-    text-align: center;
-}
-.avatar {
-    width: 60px;
-    height: 60px;
-    display: block;
-}
 .cls-input-number {
     width: unset;
 }
 </style>
 
 <script>
+import { mapActions } from 'vuex'
 
 export default {
   name: 'edit-form',
   props: ['data', 'result'],
   inject: ['reload'],
+  mounted () {
+    this.getShortHostsConfig().then((res) => {
+      this.shortUrls = res.data
+    })
+  },
   methods: {
+    ...mapActions([
+      'getShortHostsConfig',
+      'editJump'
+    ]),
     // 重置表单数据
     reset () {
       this.$refs.thisForm.resetFields()
@@ -95,7 +82,7 @@ export default {
       })
       // 重试挨个赋值，这种方式就可以不绑定父组件了
       if (row) {
-        for (let key in row) {
+        for (let key in this.result) {
           this.result[key] = row[key]
         }
       } else if (row === false && this.result.id !== 'add') {
@@ -119,25 +106,20 @@ export default {
       this.$refs[formName]
         .validate()
         .then(res => {
-          console.log(this.result)
-          this.fresh()
-        })
-        // eslint-disable-next-line handle-callback-err
-        .catch(err => {
-          if (err.message) {
-            this.$message.error(err.message)
-          }
-          console.log(err)
-          console.log('error submit!!')
+          // 提交接口
+          this.editJump(this.result).then((res) => {
+            this.$message.success(res.msg)
+            this.fresh() // 局部刷新
+          }).catch(() => {
+            this.fresh()
+          })
         })
     }
   },
   data () {
     return {
-      shortUrls: {
-        '1': 'http://i8jo.cn',
-        '2': 'http://s0o2.cn'
-      },
+      disabled: true,
+      shortUrls: {},
       // 表单验证规则
       rulesForm: {
         username: {
@@ -147,7 +129,7 @@ export default {
               return callback(new Error('请填写账号'))
             }
 
-            if (!/^[1][3,4,5,7,8,9][0-9]{9}$/.test(value)) {
+            if (!/^1[3-9]\d{9}$/.test(value)) {
               // 如果callback(new Error('错误要提示的信息'))代表验证不通过
               return callback(new Error('请填写正确的手机号码'))
             }

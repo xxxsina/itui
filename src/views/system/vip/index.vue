@@ -231,6 +231,9 @@ export default {
         status: column.status
       }).then((res) => {
         this.$message.success(res.msg)
+      }).catch(() => {
+        column.status = column.status === 1 ? 0 : 1
+        this.data.list[index] = column
       })
     },
     // 删除事件
