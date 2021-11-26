@@ -7,40 +7,42 @@
                 </el-col>
                 <el-col :sm="20">
                     <div style="text-align: left; font-family: cursive; color: #fff;">
-                        <!-- 科技改变生活 -->
-                        😁
+                        科技改变生活
                     </div>
                 </el-col>
-                <el-col :sm="4">
+                <el-col :sm="3">
                     <el-dropdown trigger="click" placement="bottom-start">
-                        <span class="el-dropdown-link">
-                            <el-avatar class="cls-avatar-img cls-avatar-img-username" shape="square"
-                            :size="30"
-                            :src="data.users.avatar"
-                            @error="errorHandler">
-                                <img :src="this.G.imgErrPath" />
-                            </el-avatar>
-                            {{ data.users.username }}
-                        </span>
+                        <el-row class="el-dropdown-link">
+                            <el-col :sm="5" :offset="3">
+                                <el-avatar class="cls-avatar-img cls-avatar-img-username" shape="square"
+                                :size="30"
+                                :src="imageUrl">
+                                    <img :src="this.G.imgErrPath" />
+                                </el-avatar>
+                            </el-col>
+                            <el-col v-if="!this.G.isMobileInterView()" :sm="8" :offset="1" style="line-height:34px;">{{ result.username }}</el-col>
+                            <el-col v-if="!this.G.isMobileInterView()" :sm="8" :offset="1" style="line-height:0;">{{ result.nickname }}</el-col>
+                        </el-row>
                         <el-dropdown-menu class="cls-dropdown-menu" slot="dropdown">
                             <el-dropdown-item class="cls-drop-item-user-img">
                                 <el-avatar class="cls-avatar-img" shape="square"
                                 :size="120"
-                                :src="data.users.avatar"
+                                :src="imageUrl"
                                 @error="errorHandler">
                                     <img :src="this.G.imgErrPath" />
                                 </el-avatar>
                                 <el-card class="box-card"
                                 shadow="never"
                                 :body-style="{ padding: '6px', 'background-color': '#18bc9c'}">
-                                    <div class="text item">登录时间: 2000</div>
-                                    <div class="text item">会员等级: 2000</div>
+                                    <div v-if="this.G.isMobileInterView()" class="text item">账号: {{ result.username }}</div>
+                                    <div v-if="this.G.isMobileInterView()" class="text item">昵称: {{ result.nickname }}</div>
+                                    <div class="text item">角色: {{ result.group_name }}</div>
                                 </el-card>
                             </el-dropdown-item>
                             <el-dropdown-item class="cls-drop-item-user-bottom">
                                 <el-row>
                                     <el-col :span="8" :offset="2">
-                                        <el-link :underline=false class="cls-col-a1" href="#/system/admin">
+                                        <el-link :underline=false class="cls-col-a1" href="#/system/profile">
                                             <i class="el-icon-user-solid"></i>
                                             个人资料
                                         </el-link>
@@ -62,16 +64,25 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 
 export default {
   name: 'app-header',
   props: ['data'],
   mounted () {
     this.getClientWidth()
+    this.profile()
+  },
+  computed: {
+    // 这里是获取vuex值的方式，要在计算属性里面
+    ...mapGetters([
+      'adminInfo'
+    ])
   },
   methods: {
+    // 这里是获取vuex函数的方式，要在methods里面
     ...mapActions([
+      'getAdminProfile',
       'logout'
     ]),
     errorHandler () {
@@ -84,19 +95,47 @@ export default {
     getClientWidth () {
       this.clientWidth = this.$refs.baseApp.clientWidth
     },
+    // 请求管理员数据
+    profile () {
+      this.getAdminProfile().then((res) => {
+        this.result = res.data
+        this.imageUrl = res.data.avatar ? this.G.imgHost + res.data.avatar : ''
+      })
+    },
     signOut () {
-      this.logout().then((res) => {
-        this.$router.push('/login')
+      this.$confirm('你是否要退出管理中心?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$message({
+          type: 'success',
+          message: '退出成功!'
+        })
+        this.logout().then((res) => {
+          this.$router.push('/login')
+        }).catch(() => {
+          this.$router.push('/login')
+        })
       }).catch(() => {
-        this.$router.push('/login')
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        })
       })
     }
   },
   data () {
     return {
+      imageUrl: '',
+      result: {},
       clientWidth: 0,
       fold: this.data.isCollapse
     }
+  },
+  watch: {
+    // fold (val, valnew) {
+    // }
   }
 }
 </script>

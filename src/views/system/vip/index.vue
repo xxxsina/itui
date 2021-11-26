@@ -17,6 +17,7 @@
           :data="data.list"
           row-key="id"
           border
+          v-loading="loading"
           default-expand-all
           @selection-change="handleSelectionChange"
           :cell-style="{padding:'0px'}"
@@ -48,8 +49,8 @@
             label="是否显示购买"
             width="200">
             <template slot-scope="scope">
-                <el-tag size="small" v-if="scope.row.status==1">是</el-tag>
-                <el-tag size="small" type="danger" v-if="scope.row.status!=1">否</el-tag>
+                <el-tag size="small" type="success" v-if="scope.row.is_show==1">是</el-tag>
+                <el-tag size="small" type="danger" v-else>否</el-tag>
             </template>
             </el-table-column>
             <el-table-column
@@ -188,9 +189,6 @@ export default {
       'editAuthVip',
       'delAuthVip'
     ]),
-    // errorHandler () {
-    //   return true
-    // },
     cancel () {
       this.$refs.thisForm.reset()
     },
@@ -268,13 +266,18 @@ export default {
     },
     // 请求数据统一调用方法
     getList () {
+      this.loading = true
       this.getAuthVipList().then((res) => {
         this.data = res.data
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
       })
     }
   },
   data () {
     return {
+      loading: true,
       dialogToolDataDefault: {
         title: '添加',
         visible: false

@@ -2,11 +2,11 @@
     <div class="app-member-userlog">
         <el-container class="cls-container cls-container-op">
             <el-col style="white-space: nowrap;">
-                <el-form :model="search" :rules="rulesSearch" ref="searchForm" :inline="true">
+                <el-form :model="search" :rules="rulesSearch" ref="searchForm" :inline="!this.G.isMobileInterView()">
                   <el-button type="success" @click="reload" style="padding: 9px 12px;" title="刷新">
                     <i class="el-icon-refresh"></i>
                   </el-button>
-                  <el-form-item prop="datetime">
+                  <el-form-item prop="datetime" v-if="!this.G.isMobileInterView()">
                       <el-date-picker
                           v-model="search.datetime"
                           type="datetimerange"
@@ -17,7 +17,7 @@
                       </el-date-picker>
                   </el-form-item>
                   <el-form-item prop="content">
-                      <el-input v-model="search.content" clearable placeholder="账号"></el-input>
+                      <el-input v-model="search.content" clearable placeholder="账号或者操作名称"></el-input>
                   </el-form-item>
                   <el-button icon="el-icon-search" round @click="submitSearchForm('searchForm')"></el-button>
                 </el-form>
@@ -28,6 +28,7 @@
             :data="data.list"
             row-key="id"
             border
+            v-loading="loading"
             default-expand-all
             :cell-style="{padding:'0px'}"
             :row-style="{height:'34px'}"
@@ -71,7 +72,6 @@
                 <el-button
                 title="详情"
                 type='success'
-                plain
                 size="mini"
                 icon="el-icon-tickets"
                 @click="handleDoc(scope.$index, scope.row)"></el-button>
@@ -131,12 +131,15 @@ export default {
       this.$refs[formName]
         .validate()
         .then(res => {
-          // console.log(this.search)
+          this.loading = true
           this.getUserLogList({
             search: this.search,
             page: 1
           }).then((res) => {
             this.data = res.data
+            this.loading = false
+          }).catch(() => {
+            this.loading = false
           })
         })
     },
@@ -146,15 +149,20 @@ export default {
     },
     // 请求数据统一调用方法
     getList () {
+      this.loading = true
       this.getUserLogList({
         page: this.data.page
       }).then((res) => {
         this.data = res.data
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
       })
     }
   },
   data () {
     return {
+      loading: true,
       data: {
         page: 1,
         limit: 1,

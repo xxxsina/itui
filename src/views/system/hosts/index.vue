@@ -16,6 +16,7 @@
         :data="data.list"
         row-key="id"
         border
+        v-loading="loading"
         default-expand-all
         :cell-style="{padding:'0px'}"
         :row-style="{height:'34px'}"
@@ -188,11 +189,15 @@ export default {
     getList () {
       this.getHostsList().then((res) => {
         this.data = res.data
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
       })
     }
   },
   data () {
     return {
+      loading: true,
       dialogToolDataDefault: {
         title: '添加',
         visible: false

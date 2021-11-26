@@ -4,17 +4,6 @@
             <el-form-item label="" prop="id" style="margin:0;">
                 <input type="hidden" :value="result.id" />
             </el-form-item>
-            <!-- <el-form-item label="渠道二维码" prop="url">
-                <el-upload
-                class="avatar-uploader"
-                action="https://jsonplaceholder.typicode.com/posts/"
-                :show-file-list="false"
-                :on-success="handleAvatarSuccess"
-                :before-upload="beforeAvatarUpload">
-                    <img v-if="result.url" :src="result.url" class="avatar">
-                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-                </el-upload>
-            </el-form-item> -->
             <el-form-item label="渠道二维码" prop="url">
               <el-col :sm="4">
                 <el-upload
@@ -159,9 +148,13 @@ export default {
       return (isPNG || isJPG) && isLt2M
     },
     handleAvatarSuccess (res, file) {
-      this.result.url = res.data.filePath
-      this.result.image_id = res.data.id
-      this.imageUrl = URL.createObjectURL(file.raw)
+      if (res.code === 200) {
+        this.result.url = res.data.filePath
+        this.result.image_id = res.data.id
+        this.imageUrl = URL.createObjectURL(file.raw)
+      } else {
+        this.$message.error(res.msg)
+      }
     },
     // 移除图片
     handleRemove () {

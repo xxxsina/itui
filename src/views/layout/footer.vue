@@ -1,6 +1,6 @@
 <template>
     <div class="app-footer">
-        {{ data.copyrightdate }} © {{ data.companyAlias }} | {{ data.companyName }} | {{ data.copyright }}
+        {{ G.copyrightdate }} © {{ G.companyAlias }} | {{ G.companyName }} | {{ G.copyright }}
     </div>
 </template>
 

@@ -2,11 +2,11 @@
     <div class="app-form-list">
         <el-container class="cls-container cls-container-op">
             <el-col style="white-space: nowrap;">
-                <el-form :model="search" :rules="rulesSearch" ref="searchForm" :inline="true">
+                <el-form :model="search" :rules="rulesSearch" ref="searchForm" :inline="!this.G.isMobileInterView()">
                     <el-button type="success" @click="reload" style="padding: 9px 12px;" title="刷新">
                       <i class="el-icon-refresh"></i>
                     </el-button>
-                    <el-form-item prop="datetime">
+                    <el-form-item prop="datetime" v-if="!this.G.isMobileInterView()">
                         <el-date-picker
                             v-model="search.datetime"
                             type="datetimerange"
@@ -69,8 +69,8 @@
               <template slot-scope="scope">
                 <el-image
                 v-if="scope.row.image"
-                  style="width: 100px; height: 100px"
-                  :src="scope.row.image"
+                  style="max-width: 100px; max-height: 100px"
+                  :src="G.imgHost + scope.row.image"
                   fit="contain">
                 </el-image>
               </template>

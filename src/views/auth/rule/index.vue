@@ -9,14 +9,18 @@
           <i class="el-icon-plus"></i>
           添加
         </el-button>
+        <el-tag type="danger" size="mini">
+          注意：如果设置为菜单，则该规则为前端访问地址；如果设置为非菜单，则该规则为请求后端接口地址，该地址伴随着权限验证；
+        </el-tag>
       </el-col>
     </el-container>
     <el-container class="cls-container cls-container-tab">
+      <!-- 折叠属性 default-expand-all -->
       <el-table
         :data="data.list"
         row-key="id"
         border
-        default-expand-all
+        v-loading="loading"
         :cell-style="{padding:'0px'}"
         :row-style="{height:'34px'}"
         :tree-props="{children: 'childs'}"
@@ -25,7 +29,7 @@
           align="center"
           prop="id"
           label="ID"
-          width="80">
+          width="140">
         </el-table-column>
         <el-table-column
           align="center"
@@ -37,14 +41,14 @@
           align="center"
           prop="icon"
           label="图标"
-          width="120">
+          width="80">
           <template slot-scope="scope"><i :class="scope.row.icon"></i></template>
         </el-table-column>
         <el-table-column
           align="center"
           prop="rule"
           label="规则"
-          width="300">
+          width="280">
         </el-table-column>
         <el-table-column
           align="center"
@@ -210,11 +214,15 @@ export default {
     getList () {
       this.getAuthRuleList().then((res) => {
         this.data = res.data
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
       })
     }
   },
   data () {
     return {
+      loading: true,
       data: {
         page: 1,
         limit: 1,

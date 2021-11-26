@@ -1,5 +1,5 @@
 <template>
-    <div class="app-codes-detail">
+    <div class="app-short-detail">
         <el-drawer
         ref="drawerTool"
         class="cls-draw"
@@ -54,7 +54,7 @@
 
 <script>
 export default {
-  name: 'app-codes-detail',
+  name: 'app-short-detail',
   props: ['result'],
   methods: {
     errorHandler () {

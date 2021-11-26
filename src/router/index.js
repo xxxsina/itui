@@ -32,6 +32,20 @@ const router = new Router({
           }
         },
         {
+          path: '/system/profile',
+          name: 'profile',
+          meta: {
+            requireAuth: true,
+            crumb: [
+              {title: '系统管理'},
+              {title: '个人资料'}
+            ]
+          },
+          components: {
+            content: () => import('@/views/system/profile/index')
+          }
+        },
+        {
           path: '/system/hosts',
           name: 'hosts',
           meta: {
@@ -57,6 +71,20 @@ const router = new Router({
           },
           components: {
             content: () => import('@/views/system/vip/index')
+          }
+        },
+        {
+          path: '/system/attach',
+          name: 'attach',
+          meta: {
+            requireAuth: true,
+            crumb: [
+              {title: '系统管理'},
+              {title: '附件管理'}
+            ]
+          },
+          components: {
+            content: () => import('@/views/system/attach/index')
           }
         },
         {
@@ -262,8 +290,8 @@ const router = new Router({
           }
         },
         {
-          path: '/shorturl',
-          name: 'shorturl',
+          path: '/short',
+          name: 'short',
           meta: {
             requireAuth: true,
             crumb: [
@@ -271,7 +299,7 @@ const router = new Router({
             ]
           },
           components: {
-            content: () => import('@/views/shorturl/index')
+            content: () => import('@/views/short/index')
           }
         }
       ]

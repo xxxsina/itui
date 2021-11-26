@@ -2,7 +2,7 @@
     <div class="app-users-user">
         <el-container class="cls-container cls-container-op">
             <el-col style="white-space: nowrap;">
-                <el-form :model="search" :rules="rulesSearch" ref="searchForm" :inline="true">
+                <el-form :model="search" :rules="rulesSearch" ref="searchForm" :inline="!this.G.isMobileInterView()">
                     <el-button type="success" @click="reload" style="padding: 9px 12px;" title="刷新">
                       <i class="el-icon-refresh"></i>
                     </el-button>
@@ -10,7 +10,7 @@
                         <i class="el-icon-plus"></i>
                         添加
                     </el-button>
-                    <el-form-item prop="datetime">
+                    <el-form-item prop="datetime" v-if="!this.G.isMobileInterView()">
                         <el-date-picker
                             v-model="search.datetime"
                             type="datetimerange"
@@ -32,6 +32,7 @@
             :data="data.list"
             row-key="id"
             border
+            v-loading="loading"
             default-expand-all
             :cell-style="{padding:'0px'}"
             :row-style="{height:'34px'}"
@@ -47,7 +48,7 @@
             align="center"
             prop="username"
             label="账号"
-            width="200">
+            width="120">
               <template slot-scope="scope">
                 <el-button type="text" @click="handleDoc(scope.$index, scope.row)">{{ scope.row.username }}</el-button>
               </template>
@@ -56,13 +57,13 @@
             align="center"
             prop="profile.nickname"
             label="昵称"
-            width="200">
+            width="180">
             </el-table-column>
             <el-table-column
             align="center"
             prop="profile.avatar"
             label="头像"
-            width="120">
+            width="80">
             <template slot-scope="scope">
                 <el-avatar :size="40" :src="G.imgHost + scope.row.profile.avatar">
                     <img :src="G.imgErrPath" />
@@ -127,7 +128,7 @@
             align="center"
             prop="createtime"
             label="注册时间"
-            width="180">
+            width="160">
             </el-table-column>
             <el-table-column
             align="center"
@@ -266,11 +267,15 @@ export default {
       this.$refs[formName]
         .validate()
         .then(res => {
+          this.loading = true
           this.getUserList({
             search: this.search,
             page: 1
           }).then((res) => {
             this.data = res.data
+            this.loading = false
+          }).catch(() => {
+            this.loading = false
           })
         })
     },
@@ -280,15 +285,20 @@ export default {
     },
     // 请求数据统一调用方法
     getList () {
+      this.loading = true
       this.getUserList({
         page: this.data.page
       }).then((res) => {
         this.data = res.data
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
       })
     }
   },
   data () {
     return {
+      loading: true,
       dialogToolDataDefault: {
         title: '添加',
         visible: false

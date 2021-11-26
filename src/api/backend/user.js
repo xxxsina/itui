@@ -31,7 +31,7 @@ export function editUser (params) {
   )
 }
 
-// 删除
+// 销毁
 export function delUser (ids) {
   return axios().post(
     baseUrl + '/user/destroy',

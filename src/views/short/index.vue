@@ -1,8 +1,8 @@
 <template>
-    <div class="app-shorturl">
+    <div class="app-short">
         <el-container class="cls-container cls-container-op">
             <el-col style="white-space: nowrap;">
-                <el-form :model="search" :rules="rulesSearch" ref="searchForm" :inline="true">
+                <el-form :model="search" :rules="rulesSearch" ref="searchForm" :inline="!this.G.isMobileInterView()">
                     <el-button type="success" @click="reload" style="padding: 9px 12px;" title="刷新">
                       <i class="el-icon-refresh"></i>
                     </el-button>
@@ -10,7 +10,7 @@
                       <i class="el-icon-plus"></i>
                       添加
                     </el-button>
-                    <el-form-item prop="datetime">
+                    <el-form-item prop="datetime" v-if="!this.G.isMobileInterView()">
                         <el-date-picker
                             v-model="search.datetime"
                             type="datetimerange"
@@ -33,6 +33,7 @@
             :data="data.list"
             row-key="id"
             border
+            v-loading="loading"
             default-expand-all
             @selection-change="handleSelectionChange"
             :cell-style="{padding:'0px'}"
@@ -214,11 +215,11 @@
 <script>
 import { mapActions } from 'vuex'
 import Clipboard from 'clipboard'
-import detail from '@/views/shorturl/detail'
-import edit from '@/views/shorturl/edit'
+import detail from '@/views/short/detail'
+import edit from '@/views/short/edit'
 
 export default {
-  name: 'app-shorturl',
+  name: 'app-short',
   components: {
     'el-lee-detail': detail,
     'el-lee-edit': edit
@@ -325,11 +326,15 @@ export default {
       this.$refs[formName]
         .validate()
         .then(res => {
+          this.loading = true
           this.getShortUrlList({
             search: this.search,
             page: 1
           }).then((res) => {
             this.data = res.data
+            this.loading = false
+          }).catch(() => {
+            this.loading = false
           })
         })
     },
@@ -339,15 +344,20 @@ export default {
     },
     // 请求数据统一调用方法
     getList () {
+      this.loading = true
       this.getShortUrlList({
         page: this.data.page
       }).then((res) => {
         this.data = res.data
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
       })
     }
   },
   data () {
     return {
+      loading: true,
       dialogToolDataDefault: {
         title: '添加',
         visible: false
@@ -379,8 +389,6 @@ export default {
         url: '',
         pwd: '',
         period: 0
-        // effective_time: 0, // 暂时不用
-        // lose_time: 0
       },
       rulesSearch: {
         content: [

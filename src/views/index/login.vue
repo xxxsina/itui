@@ -171,7 +171,7 @@ export default {
           this.loginByUsername(this.result).then((res) => {
             if (res) {
               this.$message.success(res.msg)
-              if (res.code == 200) {
+              if (res.code === 200) {
                 if (this.$route.query.redirect) {
                   this.$router.push(this.$route.query.redirect)
                 } else {

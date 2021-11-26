@@ -1,18 +1,18 @@
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { loginByUsername, logout } from '@/api/backend/login'
-import { getAdminList, delAdmin, editAdmin, getAdminLogList } from '@/api/backend/admin'
+import { getAdminList, delAdmin, editAdmin, getAdminLogList, getAdminProfile, setAdminProfile } from '@/api/backend/admin'
 
 const admin = {
   state: {
     token: getToken(),
-    admin: {}
+    data: {}
   },
   mutations: {
     SET_TOKEN: (state, token) => {
       state.token = token
     },
-    SET_ADMIN: (state, admin) => {
-      state.admin = admin
+    SET_ADMIN: (state, data) => {
+      state.data = data
     }
   },
   actions: {
@@ -83,6 +83,27 @@ const admin = {
     getAdminLogList ({ commit }, params) {
       return new Promise((resolve, reject) => {
         getAdminLogList(params.search, params.page).then(response => {
+          resolve(response)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    // 获取当前管理员信息
+    getAdminProfile ({ commit }) {
+      return new Promise((resolve, reject) => {
+        getAdminProfile().then(response => {
+          commit('SET_ADMIN', response.data)
+          resolve(response)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    // 当前管理员自我编辑
+    setAdminProfile ({ commit }, params) {
+      return new Promise((resolve, reject) => {
+        setAdminProfile(params).then(response => {
           resolve(response)
         }).catch(error => {
           reject(error)

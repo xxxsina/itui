@@ -1,6 +1,6 @@
 <template>
     <div class="edit-form">
-        <el-form :model="result" :rules="rules" ref="thisForm" :label-width="this.G.getFormWidthSize()">
+        <el-form :model="result" :rules="rulesForm" ref="thisForm" :label-width="this.G.getFormWidthSize()">
             <el-form-item label="" prop="id" style="margin:0;">
                 <input type="hidden" :value="result.id" />
             </el-form-item>
@@ -118,7 +118,7 @@ export default {
       // },
       groups: [],
       // 表单验证规则
-      rules: {
+      rulesForm: {
         group_id: [
           { required: true, message: '请选择权限组', trigger: 'change' }
         ],

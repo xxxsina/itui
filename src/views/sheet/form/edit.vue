@@ -11,15 +11,23 @@
                 <el-input v-model="result.phone" placeholder="客户手机号"></el-input>
             </el-form-item>
             <el-form-item label="上传图片" prop="image">
+              <el-col :sm="4">
                 <el-upload
                 class="avatar-uploader"
-                action="https://jsonplaceholder.typicode.com/posts/"
+                name="image"
+                list-type="picture-card"
+                :data="params"
+                :action="uploadLink"
                 :show-file-list="false"
                 :on-success="handleAvatarSuccess"
                 :before-upload="beforeAvatarUpload">
-                    <img v-if="result.image" :src="result.image" class="avatar">
+                    <img v-if="imageUrl" :src="imageUrl" class="avatar">
                     <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                 </el-upload>
+              </el-col>
+              <el-col :sm="4" class="cls-remove" v-if="imageUrl">
+                <el-button icon="el-icon-delete" circle @click="handleRemove"></el-button>
+              </el-col>
             </el-form-item>
         </el-form>
 
@@ -37,6 +45,8 @@
     cursor: pointer;
     position: relative;
     overflow: hidden;
+    display: block;
+    text-align: center;
 }
 .avatar-uploader >>> .el-upload:hover {
     border-color: #409EFF;
@@ -44,22 +54,26 @@
 .avatar-uploader-icon {
     font-size: 28px;
     color: #8c939d;
-    width: 60px;
-    height: 60px;
-    line-height: 60px;
     text-align: center;
 }
 .avatar {
-    width: 60px;
-    height: 60px;
+    width: 148px;
+    height: 148px;
     display: block;
 }
-.cls-input-number {
-    width: unset;
+.cls-remove {
+  margin-top: 110px;
+  margin-left: 110px;
+  position: absolute;
+  opacity: 0.6;
+}
+.cls-remove button {
+  border: 1px #c0c4cc dashed;
 }
 </style>
 
 <script>
+import baseUrl from '@/api/baseUrl'
 import { mapActions } from 'vuex'
 
 export default {
@@ -84,6 +98,9 @@ export default {
       if (row) {
         for (let key in this.result) {
           this.result[key] = row[key]
+        }
+        if (this.result.image) {
+          this.imageUrl = this.G.imgHost + this.result.image
         }
       } else if (row === false && this.result.id !== 'add') {
         // 修改数据之后立即使用这个方法，获取更新后的 DOM
@@ -116,8 +133,14 @@ export default {
       return (isPNG || isJPG) && isLt2M
     },
     handleAvatarSuccess (res, file) {
-      console.log(file)
+      this.result.image = res.data.filePath
+      this.result.image_id = res.data.id
       this.imageUrl = URL.createObjectURL(file.raw)
+    },
+    // 移除图片
+    handleRemove () {
+      this.result.image = ''
+      this.imageUrl = ''
     },
     // form提交方法
     submitForm (formName) {
@@ -136,6 +159,11 @@ export default {
   },
   data () {
     return {
+      uploadLink: baseUrl + '/file/upload',
+      imageUrl: '',
+      params: {
+        type: 'formlog'
+      },
       // 表单验证规则
       rulesForm: {
         realname: [

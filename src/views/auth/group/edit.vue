@@ -128,7 +128,7 @@ export default {
       // 改变默认的tree数据名字的绑定
       defaultProps: {
         id: 'id',
-        label: 'title',
+        label: 'name',
         children: 'childs'
       },
       // 表单验证规则

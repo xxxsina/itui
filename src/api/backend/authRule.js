@@ -16,7 +16,7 @@ export function editAuthRule (params) {
   )
 }
 
-// 删除
+// 销毁
 export function delAuthRule (ids) {
   return axios().post(
     baseUrl + '/authRule/destroy',

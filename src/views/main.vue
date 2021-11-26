@@ -1,6 +1,6 @@
 /* eslint-disable vue/no-duplicate-attributes */
 <template>
-  <div id="app">
+  <div id="xmain">
       <el-container style="height:100%; line-height:100%;">
         <!-- 头部 -->
         <el-aside style="width: auto;">
@@ -17,9 +17,9 @@
             @open="handleOpen"
             router>
             <el-row>
-                <div class="grid-content bg-purple cls-company" :class="{ reduceFont: result.isCollapse }">
-                {{ G.hostName }}
-                </div>
+              <div class="grid-content bg-purple cls-company" :class="{ reduceFont: result.isCollapse }">
+              {{ G.hostName }}
+              </div>
             </el-row>
             <app-navMenu :navMenus='menuBar'></app-navMenu>
           </el-menu>
@@ -35,20 +35,20 @@
               <router-view v-if="isRouterAlive" name="content"></router-view>
             </el-main>
             <!-- 尾部 -->
-            <el-footer style="height:36px;"><app-footer :data='result'></app-footer></el-footer>
+            <el-footer style="height:36px;"><app-footer></app-footer></el-footer>
         </el-container>
     </el-container>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 import header from '@/views/layout/header'
 import footer from '@/views/layout/footer'
 import navMenu from '@/views/layout/navMenu'
 
 export default {
-  name: 'App',
+  name: 'xmain',
   components: {
     'app-header': header,
     'app-footer': footer,
@@ -60,32 +60,8 @@ export default {
       reload: this.reload
     }
   },
-  methods: {
-    // 局部刷新用
-    reload () {
-      this.isRouterAlive = false
-      this.$nextTick(function () {
-        this.isRouterAlive = true
-      })
-    },
-    handleOpen (index) {
-      this.nowIndexMenu = index
-    },
-    handleSelect (index, indexPath) {
-      this.$refs.menu.close(this.nowIndexMenu)
-    }
-  },
   mounted () {
-    // let start = window.location.href.lastIndexOf('#')
-    // let path = window.location.href.slice(start + 1)
-    // this.activeIndex = path || 'home'
-    // console.log(this.$route)
-  },
-  created () {
-    // eslint-disable-next-line no-undef
-    // console.log(this.menuData)
-    // 加载menu数据
-    this.G.setMenu(this.menuBar)
+    this.getMenus()
   },
   computed: {
     // eslint-disable-next-line no-undef
@@ -101,21 +77,30 @@ export default {
       }
     }
   },
+  methods: {
+    ...mapActions([
+      'getMenus'
+    ]),
+    // 局部刷新用
+    reload () {
+      this.isRouterAlive = false
+      this.$nextTick(function () {
+        this.isRouterAlive = true
+      })
+    },
+    handleOpen (index) {
+      this.nowIndexMenu = index
+    },
+    handleSelect (index, indexPath) {
+      this.$refs.menu.close(this.nowIndexMenu)
+    }
+  },
   data () {
     return {
       isRouterAlive: true,
       nowIndexMenu: '',
-      // activeIndex: this.$route.path,
       result: {
-        isCollapse: this.G.isFoldMenu(), // 是否折叠menu 和 是否缩小logo字体
-        companyName: '信息技术有限公司',
-        copyright: '川ICP备000000000号',
-        copyrightdate: '2022',
-        users: {
-          username: '13880789545',
-          islogin: true,
-          avatar: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg'
-        }
+        isCollapse: this.G.isFoldMenu() // 是否折叠menu 和 是否缩小logo字体
       }
     }
   },
@@ -129,7 +114,7 @@ export default {
 </script>
 
 <style>
-html, body, #app {
+html, body, #xmain {
   padding: 0;
   margin: 0;
   height: 100%;
@@ -157,17 +142,7 @@ html, body, #app {
 }
 .el-menu {
   height: 100%;
-  /* width: 100%; */
   border-right: unset;
-}
-.el-menu-item, .el-submenu__title {
-  /* height: 50px; */
-}
-.cls-header-menu {
-  background-color:#15a589;
-}
-.cls-header-menu > li > div > i {
-  display: none;
 }
 .el-input__inner {
   border-radius: 2px;
@@ -198,4 +173,14 @@ html, body, #app {
 .cls-container-op .el-button {
   margin-left: unset;
 }
+
+/* menus折叠后隐藏文字，坑了我好久，泥妈改变一下样式就可以了 */
+/*隐藏文字 start*/
+.el-menu--collapse  .el-submenu__title span{
+  display: none;
+}
+.el-menu--collapse  .el-submenu__title .el-submenu__icon-arrow{
+  display: none;
+}
+/*隐藏 end */
 </style>

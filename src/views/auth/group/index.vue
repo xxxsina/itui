@@ -16,6 +16,7 @@
         :data="data.list"
         row-key="id"
         border
+        v-loading="loading"
         default-expand-all
         :cell-style="{padding:'0px'}"
         :row-style="{height:'34px'}"
@@ -65,7 +66,7 @@
           align="center"
           prop="op"
           label="操作">
-          <template slot-scope="scope">
+          <template slot-scope="scope" v-if="scope.row.id != 1">
             <el-button
               title="修改"
               type='primary'
@@ -160,6 +161,12 @@ export default {
     },
     // 修改状态
     handleEditStatus (index, column) {
+      if (column.id === 1) {
+        this.$message.error('超级权限禁止更改')
+        column.status = column.status === 1 ? 0 : 1
+        this.data.list[index] = column
+        return false
+      }
       this.editAuthGroup({
         id: column.id,
         name: column.name,
@@ -191,15 +198,20 @@ export default {
     },
     // 请求数据统一调用方法
     getList () {
+      this.loading = true
       this.getAuthGroupList({
         page: this.data.page
       }).then((res) => {
         this.data = res.data
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
       })
     }
   },
   data () {
     return {
+      loading: true,
       data: {
         page: 1,
         limit: 1,

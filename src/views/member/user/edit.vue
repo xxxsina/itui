@@ -82,9 +82,6 @@
 .cls-remove button {
   border: 1px #c0c4cc dashed;
 }
-.cls-input-number {
-    width: unset;
-}
 .form-footer {
     margin-top: 10px;
 }
@@ -159,9 +156,13 @@ export default {
     },
     // 上传图片成功回调
     handleAvatarSuccess (res, file) {
-      this.result.profile.avatar = res.data.filePath
-      this.result.image_id = res.data.id
-      this.imageUrl = URL.createObjectURL(file.raw)
+      if (res.code === 200) {
+        this.result.profile.avatar = res.data.filePath
+        this.result.image_id = res.data.id
+        this.imageUrl = URL.createObjectURL(file.raw)
+      } else {
+        this.$message.error(res.msg)
+      }
     },
     // 移除图片
     handleRemove () {

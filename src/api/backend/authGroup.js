@@ -19,7 +19,7 @@ export function editAuthGroup (params) {
   )
 }
 
-// 删除
+// 销毁
 export function delAuthGroup (ids) {
   return axios().post(
     baseUrl + '/authGroup/destroy',
