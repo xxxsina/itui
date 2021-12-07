@@ -15,7 +15,7 @@
 
             <el-descriptions-item label="状态" label-class-name="cls-tb-label">
                 <el-tag size="small" type="success" v-if="result.status==1">正常</el-tag>
-                <el-tag size="small" type="danger" v-if="result.status==2">禁止</el-tag>
+                <el-tag size="small" type="danger" v-else>禁止</el-tag>
             </el-descriptions-item>
             <el-descriptions-item label="展示方式" label-class-name="cls-tb-label">
                 <el-tag size="small" type="success" v-if="result.smod==1">随机</el-tag>

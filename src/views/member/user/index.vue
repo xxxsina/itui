@@ -6,7 +6,7 @@
                     <el-button type="success" @click="reload" style="padding: 9px 12px;" title="刷新">
                       <i class="el-icon-refresh"></i>
                     </el-button>
-                    <el-button type="primary" @click="showDialogTool()" style="padding: 9px 12px;">
+                    <el-button type="primary" @click="showDialogTool()" style="padding: 9px 12px;margin-left: 0px;">
                         <i class="el-icon-plus"></i>
                         添加
                     </el-button>
@@ -104,6 +104,7 @@
             label="VIP过期状态"
             width="100">
               <template slot-scope="scope">
+                <el-tag size="small" type="info" v-if="scope.row.profile.vip_expire_status==2">未设置</el-tag>
                 <el-tag size="small" type="success" v-if="scope.row.profile.vip_expire_status==1">正常</el-tag>
                 <el-tag size="small" type="danger" v-if="scope.row.profile.vip_expire_status==0">过期</el-tag>
               </template>

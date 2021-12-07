@@ -14,7 +14,7 @@ module.exports = {
       // 这泥妈坑啊，必须要在这里配置跨域
       '/api':{
         target: "http://www.itui360.cn", // 后端接口地址
-        changeOrigin:true, // 是否允许跨域
+        changeOrigin: true, // 是否允许跨域
         pathRewrite:{
             '^/api': ''
         }

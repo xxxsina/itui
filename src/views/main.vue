@@ -5,6 +5,7 @@
         <!-- 头部 -->
         <el-aside style="width: auto;">
           <el-menu
+            style="border-right: 0px;height: 100%;"
             ref="menu"
             class="el-menu-vertical-demo"
             background-color="#222d32"
@@ -35,7 +36,7 @@
               <router-view v-if="isRouterAlive" name="content"></router-view>
             </el-main>
             <!-- 尾部 -->
-            <el-footer style="height:36px;"><app-footer></app-footer></el-footer>
+            <el-footer style="height:36px; padding: 0;"><app-footer></app-footer></el-footer>
         </el-container>
     </el-container>
   </div>
@@ -119,19 +120,9 @@ html, body, #xmain {
   margin: 0;
   height: 100%;
 }
-.el-header{
-  background-color: #30bc9b;
-  color: #333;
-  text-align: center;
-  line-height: 50px;
-  padding: unset;
-}
 .el-main {
   background-color: #f1f4f6;
   color: #333;
-}
-.el-footer {
-  padding: 0;
 }
 .cls-company {
   background-color:#15a589;
@@ -139,10 +130,6 @@ html, body, #xmain {
   color: #fff;
   text-align: center;
   line-height: 50px;
-}
-.el-menu {
-  height: 100%;
-  border-right: unset;
 }
 .el-input__inner {
   border-radius: 2px;

@@ -29,8 +29,11 @@
             <el-form-item label="状态" prop="status">
                 <el-radio-group v-model="result.status">
                     <el-radio :label="1">正常</el-radio>
-                    <el-radio :label="2">禁止</el-radio>
+                    <el-radio :label="0">禁止</el-radio>
                 </el-radio-group>
+            </el-form-item>
+            <el-form-item v-if="result.type==3" label="跳转地址" prop="total">
+                <el-input v-model="result.extend" placeholder="跳转地址，如：http://..."></el-input>
             </el-form-item>
             <el-form-item label="访问量" prop="total">
                 <el-input-number class="cls-input-number" v-model="result.total" :min="0" :max="1000000000" placeholder="可以不填写"></el-input-number>

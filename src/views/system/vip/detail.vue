@@ -17,7 +17,7 @@
             <el-descriptions-item label="原价¥" :span="2" label-class-name="cls-tb-label" content-class-name="cls-tb-content cls-tb-content-line">{{ result.cost_price }}</el-descriptions-item>
             <el-descriptions-item label="状态">
                 <el-tag size="small" type="success" v-if="result.status==1">正常</el-tag>
-                <el-tag size="small" type="danger" v-if="result.status==2">禁止</el-tag>
+                <el-tag size="small" type="danger" v-else>禁止</el-tag>
             </el-descriptions-item>
             <el-descriptions-item label="修改时间">{{ result.updatetime }}</el-descriptions-item>
             <el-descriptions-item label="创建时间" :span="2">{{ result.createtime }}</el-descriptions-item>

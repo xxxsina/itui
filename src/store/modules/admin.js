@@ -49,6 +49,15 @@ const admin = {
         })
       })
     },
+    // 登出[前端]
+    fedLogout ({ commit }) {
+      return new Promise((resolve, reject) => {
+        commit('SET_TOKEN', '')
+        commit('SET_ADMIN', '')
+        removeToken()
+        resolve()
+      })
+    },
     // 管理员列表
     getAdminList ({ commit }, params) {
       return new Promise((resolve, reject) => {

@@ -13,11 +13,11 @@
             <el-descriptions-item label="账号">{{ result.username }}</el-descriptions-item>
             <el-descriptions-item label="状态" :span="2">
                 <el-tag size="small" type="success" v-if="result.status==1">正常</el-tag>
-                <el-tag size="small" type="danger" v-if="result.status==2">禁止</el-tag>
+                <el-tag size="small" type="danger" v-else>禁止</el-tag>
             </el-descriptions-item>
             <el-descriptions-item label="名称" >{{ result.name }}</el-descriptions-item>
             <el-descriptions-item label="访问密码">{{ result.pwd }}</el-descriptions-item>
-            <el-descriptions-item label="有效期" :span="2">{{ result.period }}</el-descriptions-item>
+            <el-descriptions-item label="有效期" :span="2">{{ result.period_text }}</el-descriptions-item>
             <el-descriptions-item label="访问次数" label-class-name="cls-tb-label" content-class-name="cls-tb-content">{{ result.total }}</el-descriptions-item>
             <el-descriptions-item label="访问上限" :span="3" >{{ result.total_limit }}</el-descriptions-item>
             <el-descriptions-item label="创建时间">{{ result.createtime }}</el-descriptions-item>

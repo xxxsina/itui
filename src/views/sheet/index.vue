@@ -6,7 +6,7 @@
                   <el-button type="success" @click="reload" style="padding: 9px 12px;" title="刷新">
                     <i class="el-icon-refresh"></i>
                   </el-button>
-                  <el-button type="primary" @click="showDialogTool()" style="padding: 9px 12px;">
+                  <el-button type="primary" @click="showDialogTool()" style="padding: 9px 12px;margin-left: 0px;">
                       <i class="el-icon-plus"></i>
                       添加
                   </el-button>
@@ -135,6 +135,7 @@
                 @click="handleLink(scope.$index, scope.row)">
                 </el-button>
                 <el-button
+                style="margin-left: 0px;"
                 title="修改"
                 type='primary'
                 size="mini"
@@ -194,9 +195,6 @@
 .cls-tb-url-input >>> input {
   height: 26px;
   line-height: 26px;
-}
-.el-button {
-  margin-left: unset;
 }
 .cpbtn {
   margin-left: -20px;

@@ -8,20 +8,21 @@
         :size="drawerSize"
         :visible.sync="drawer"
         :with-header="true">
-        <el-descriptions :title="'用户 ' + result.username + ' 详情'" direction="vertical" :column="4" border class="cls-draw-desc">
+        <el-descriptions :title="'用户 ' + result.username + ' 详情'" direction="vertical" :column="3" border class="cls-draw-desc">
             <el-descriptions-item label="ID">{{ result.id }}</el-descriptions-item>
             <el-descriptions-item label="账号">{{ result.username }}</el-descriptions-item>
             <el-descriptions-item label="昵称" :span="2">{{ result.profile.nickname }}</el-descriptions-item>
             <el-descriptions-item label="状态">
                 <el-tag size="small" type="success" v-if="result.status==1">正常</el-tag>
-                <el-tag size="small" type="danger" v-if="result.status==2">禁止</el-tag>
+                <el-tag size="small" type="danger" v-else>禁止</el-tag>
             </el-descriptions-item>
             <el-descriptions-item label="VIP到期状态">
+              <el-tag size="small" type="info" v-if="result.profile.vip_expire_status==2">未设置</el-tag>
               <el-tag size="small" type="success" v-if="result.profile.vip_expire_status==1">正常</el-tag>
               <el-tag size="small" type="danger" v-if="result.profile.vip_expire_status==0">过期</el-tag>
             </el-descriptions-item>
             <el-descriptions-item label="VIP到期时间" :span="2" label-class-name="cls-tb-label" content-class-name="cls-tb-content">
-              {{ result.profile.vip_expire }}
+              {{ result.profile.vip_expire_text }}
             </el-descriptions-item>
             <el-descriptions-item label="注册时间">{{ result.createtime }}</el-descriptions-item>
             <el-descriptions-item label="上次登录时间">{{ result.prevtime }}</el-descriptions-item>
@@ -30,9 +31,18 @@
             <el-descriptions-item label="最后登录IP">{{ result.loginip }}</el-descriptions-item>
             <el-descriptions-item label="登录失败次数" :span="2">{{ result.loginfailure }}</el-descriptions-item>
             <el-descriptions-item label="头像">
-                <el-avatar :size="40" :src="G.imgHost + result.profile.avatar" @error="errorHandler">
-                    <img :src="G.imgErrPath" />
-                </el-avatar>
+                <el-image
+                  style="width: 100px; height: 100px"
+                  v-if="result.profile.avatar"
+                  :src="G.imgHost + result.profile.avatar"
+                  fit="contain">
+                </el-image>
+                <el-image
+                  style="width: 100px; height: 100px"
+                  v-if="!result.profile.avatar"
+                  :src="G.imgErrPath"
+                  fit="contain">
+                </el-image>
             </el-descriptions-item>
         </el-descriptions>
         </el-drawer>
@@ -67,9 +77,6 @@ export default {
   name: 'app-detail',
   props: ['result'],
   methods: {
-    errorHandler () {
-      return true
-    },
     showDraw () {
       this.drawer = true
     },

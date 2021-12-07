@@ -3,7 +3,6 @@
 /* eslint-disable no-unused-vars */
 import axios from 'axios'
 import { Message, MessageBox } from 'element-ui'
-// import VueCookie from 'vue-cookie'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
 
@@ -28,7 +27,6 @@ service.interceptors.request.use(
       config.data = JSON.stringify(config.data)
     }
     // 请求发送前进行处理
-    // console.log(store.getters.token)
     // header x-token
     if (store.getters.token) {
       config.headers['token'] = getToken()
@@ -41,24 +39,37 @@ service.interceptors.request.use(
   }
 )
 
+let isShowBox = false
+
 // 添加响应拦截器
 service.interceptors.response.use(
   (response) => {
     // 这里是吧response对象里面的data取出来
     let { data } = response
     if (data.code !== 200 && data.code !== 1) {
-      if (data.code === 10018) {
-        // MessageBox.confirm('你已被登出，可以取消继续留在该页面，或者重新登录', '确定登出', {
-        MessageBox.confirm(data.msg, '确定退出', {
-          confirmButtonText: '重新登录',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          // 刷新页面
-          store.dispatch('Logout').then(() => {
-            location.reload()// 为了重新实例化vue-router对象 避免bug
+      if (data.code === 201) {
+        if (isShowBox === false) {
+          isShowBox = true
+          MessageBox.confirm('登录已失效，请重新登录', '提示', {
+            confirmButtonText: '重新登录',
+            cancelButtonText: '取消',
+            showCancelButton: false,
+            closeOnClickModal: false,
+            showClose: false,
+            type: 'error'
+          }).then(() => {
+            // 跳转logout、刷新页面
+            store.dispatch('fedLogout').then(() => {
+              location.reload()
+            })
+          }).catch(() => {
+            Message({
+              type: 'info',
+              message: '已取消'
+            })
           })
-        })
+        }
+        return Promise.resolve(data)
       } else if (data.code !== 201) {
         Message({
           message: data.msg,
@@ -66,11 +77,13 @@ service.interceptors.response.use(
           duration: 5 * 1000
         })
       }
+      // return Promise.resolve(data)
       // 这里把服务器返回的数据以error形式返回
+      // 这样要报错：Uncaught (in promise)
       return Promise.reject(data)
     } else {
       // 成功就返回数据，供业务判断及显示
-      return data
+      return Promise.resolve(data)
     }
   },
   (error) => {

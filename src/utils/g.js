@@ -1,10 +1,10 @@
 
 export default {
-  imgHost: 'http://img.itui360.cn/',
+  imgHost: 'http://img.itui360.com/',
   imgErrPath: '../static/images/broken_err.png',
   hostName: '爱推360',
-  companyName: '信息技术有限公司',
-  copyright: '川ICP备000000000号',
+  companyName: '成都铁饭碗科技有限公司',
+  copyright: '蜀ICP备14022022号-8',
   copyrightdate: '2022',
   menu: '',
   fold: false,

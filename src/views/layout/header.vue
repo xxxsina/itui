@@ -24,7 +24,7 @@
                             <el-col v-if="!this.G.isMobileInterView()" :sm="8" :offset="1" style="line-height:0;">{{ result.nickname }}</el-col>
                         </el-row>
                         <el-dropdown-menu class="cls-dropdown-menu" slot="dropdown">
-                            <el-dropdown-item class="cls-drop-item-user-img">
+                            <el-dropdown-item class="cls-drop-item-user-img" style="background-color: #18bc9c;padding: 10px 0;">
                                 <el-avatar class="cls-avatar-img" shape="square"
                                 :size="120"
                                 :src="imageUrl"
@@ -39,7 +39,7 @@
                                     <div class="text item">角色: {{ result.group_name }}</div>
                                 </el-card>
                             </el-dropdown-item>
-                            <el-dropdown-item class="cls-drop-item-user-bottom">
+                            <el-dropdown-item class="cls-drop-item-user-bottom" style="padding: 10px 0;">
                                 <el-row>
                                     <el-col :span="8" :offset="2">
                                         <el-link :underline=false class="cls-col-a1" href="#/system/profile">
@@ -141,6 +141,13 @@ export default {
 </script>
 
 <style scoped>
+.el-header{
+  background-color: #30bc9b;
+  color: #333;
+  text-align: center;
+  line-height: 50px;
+  padding: unset;
+}
 .cls-i-fold {
     text-align: left;
     margin-left: 10px;
@@ -187,7 +194,6 @@ export default {
 .cls-drop-item-user-img {
     text-align: center;
     background-color: #18bc9c;
-    padding: 10px 0;
     line-height: 100%;
     text-decoration: unset;
     cursor: default;
@@ -196,7 +202,6 @@ export default {
     background-color: #18bc9c;
 }
 .cls-drop-item-user-bottom {
-    padding: 10px 0;
     cursor: default;
 }
 .cls-drop-item-user-bottom:hover {
