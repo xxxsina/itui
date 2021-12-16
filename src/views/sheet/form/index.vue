@@ -6,6 +6,17 @@
                     <el-button type="success" @click="reload" style="padding: 9px 12px;" title="刷新">
                       <i class="el-icon-refresh"></i>
                     </el-button>
+
+                <el-dropdown @command="handleCommand">
+                  <el-button type="primary">
+                    下载<i class="el-icon-arrow-down el-icon--right"></i>
+                  </el-button>
+                  <el-dropdown-menu slot="dropdown">
+                    <!-- <el-dropdown-item command="xls">&nbsp;&nbsp;.xls&nbsp;&nbsp;</el-dropdown-item> -->
+                    <el-dropdown-item command="csv">&nbsp;&nbsp;.csv&nbsp;&nbsp;</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+
                     <el-form-item prop="datetime" v-if="!this.G.isMobileInterView()">
                         <el-date-picker
                             v-model="search.datetime"
@@ -169,7 +180,8 @@ export default {
   methods: {
     ...mapActions([
       'getFormLogList',
-      'delFormLog'
+      'delFormLog',
+      'downloadJumpUrl'
     ]),
     cancel () {
       this.$refs.thisForm.reset()
@@ -247,6 +259,32 @@ export default {
         page: this.data.page
       }).then((res) => {
         this.data = res.data
+      })
+    },
+    // 下载
+    handleCommand (fileType) {
+      let params = {
+        form_id: this.$route.params.parent_id,
+        fileType: fileType
+      }
+      let _data = new Date()
+      let filename = _data.getFullYear() + '-' + _data.getMonth() + '-' + _data.getDate() + '.' + fileType
+      this.downloadJumpUrl(params).then((res) => {
+        const blob = new Blob([res.data], { type: 'application/x-csv;charset:utf-8' }) // 构造一个blob对象来处理数据，并设置文件类型
+        if (window.navigator.msSaveOrOpenBlob) { // 兼容IE10
+          navigator.msSaveBlob(blob, filename)
+        } else {
+          const href = URL.createObjectURL(blob) // 创建新的URL表示指定的blob对象
+          const a = document.createElement('a') // 创建a标签
+          a.style.display = 'none'
+          a.href = href // 指定下载链接
+          a.download = filename // 指定下载文件名
+          a.click() // 触发下载
+          URL.revokeObjectURL(a.href) // 释放URL对象
+        }
+        // this.fresh() // 局部刷新
+      }).catch(() => {
+        this.fresh()
       })
     }
   },

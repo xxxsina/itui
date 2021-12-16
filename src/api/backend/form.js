@@ -56,3 +56,10 @@ export function delFormLog (ids) {
       ids
     })
 }
+
+// 下载
+export function downloadJumpUrl (params) {
+  return axios().get(
+    baseUrl + '/formLog/download/?fileType=' + params.fileType + '&form_id=' + params.form_id
+  )
+}

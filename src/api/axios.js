@@ -46,7 +46,13 @@ service.interceptors.response.use(
   (response) => {
     // 这里是吧response对象里面的data取出来
     let { data } = response
-    if (data.code !== 200 && data.code !== 1) {
+    if (typeof data.code === 'undefined') {
+      Message({
+        message: '访问错误',
+        type: 'error',
+        duration: 5 * 1000
+      })
+    } else if (data.code !== 200 && data.code !== 1) {
       if (data.code === 201) {
         if (isShowBox === false) {
           isShowBox = true

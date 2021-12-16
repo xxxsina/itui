@@ -1,6 +1,6 @@
 
 export default {
-  imgHost: 'http://img.itui360.cn/',
+  imgHost: process.env.NODE_ENV === 'development' ? 'http://img.itui360.cn/' : 'http://img.itui360.com/',
   imgErrPath: '../static/images/broken_err.png',
   hostName: '爱推360',
   companyName: '科技有限公司',

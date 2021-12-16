@@ -1,4 +1,4 @@
-import { getFormList, editForm, delForm, getFormLogList, editFormLog, delFormLog } from '@/api/backend/form'
+import { getFormList, editForm, delForm, getFormLogList, editFormLog, delFormLog, downloadJumpUrl } from '@/api/backend/form'
 
 const hosts = {
   state: {
@@ -60,6 +60,16 @@ const hosts = {
     delFormLog ({ commit }, params) {
       return new Promise((resolve, reject) => {
         delFormLog(params.ids).then(response => {
+          resolve(response)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    // 下载
+    downloadJumpUrl ({ commit }, params) {
+      return new Promise((resolve, reject) => {
+        downloadJumpUrl(params).then(response => {
           resolve(response)
         }).catch(error => {
           reject(error)
