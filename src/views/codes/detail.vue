@@ -26,7 +26,8 @@
             <el-descriptions-item label="活码" :span="3" label-class-name="cls-tb-label">{{ result.url_addr }}</el-descriptions-item>
             <el-descriptions-item label="修改时间" label-class-name="cls-tb-label">{{ result.updatetime }}</el-descriptions-item>
             <el-descriptions-item label="创建时间" :span="3" label-class-name="cls-tb-label">{{ result.createtime }}</el-descriptions-item>
-            <el-descriptions-item label="备注" :span="3">{{ result.remark }}</el-descriptions-item>
+            <el-descriptions-item label="跳转地址" v-if="result.type === 3" :span="4">{{ result.extend }}</el-descriptions-item>
+            <el-descriptions-item label="备注" :span="4">{{ result.remark }}</el-descriptions-item>
         </el-descriptions>
         </el-drawer>
     </div>

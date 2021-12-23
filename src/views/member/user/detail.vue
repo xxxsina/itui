@@ -28,7 +28,7 @@
             <el-descriptions-item label="上次登录时间">{{ result.prevtime }}</el-descriptions-item>
             <el-descriptions-item label="最后登录时间" :span="2">{{ result.logintime }}</el-descriptions-item>
             <el-descriptions-item label="注册IP">{{ result.joinip }}</el-descriptions-item>
-            <el-descriptions-item label="最后登录IP">{{ result.loginip }}</el-descriptions-item>
+            <el-descriptions-item label="最后登录IP">{{ result.loginip }} 『 {{ result.addressIp }} 』</el-descriptions-item>
             <el-descriptions-item label="登录失败次数" :span="2">{{ result.loginfailure }}</el-descriptions-item>
             <el-descriptions-item label="头像">
                 <el-image

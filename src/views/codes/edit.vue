@@ -143,7 +143,7 @@ export default {
         },
         name: [
           { required: true, message: '请填写活码名称', trigger: 'change' },
-          { max: 15, message: '名称不能超过15个字符', trigger: 'change' }
+          { max: 150, message: '名称不能超过15个字符', trigger: 'change' }
         ],
         status: [
           { required: true, message: '请选择状态', trigger: 'change' }
@@ -154,7 +154,7 @@ export default {
         short_url: [
           { required: true, message: '请选择短域名', trigger: 'change' }
         ],
-        remark: { max: 60, message: '名称不能超过60个字符', trigger: 'change' }
+        remark: { max: 300, message: '名称不能超过60个字符', trigger: 'change' }
       }
     }
   }
