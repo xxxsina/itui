@@ -216,7 +216,9 @@ export default {
     // 抽屉显示详情
     handleDoc (index, column) {
       this.$refs.codesDetail.showDraw()
-      column.extparam = JSON.stringify(JSON.parse(column.extparam), null, 2)
+      if (column.extparam !== '') {
+        column.extparam = JSON.stringify(JSON.parse(column.extparam), null, 2)
+      }
       this.row = column
     },
     // 删除事件
@@ -268,7 +270,6 @@ export default {
     },
     // 翻页
     handleCurrentChange (page) {
-      console.log(page)
       this.getList()
     },
     // 请求数据统一调用方法

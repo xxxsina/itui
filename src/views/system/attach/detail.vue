@@ -29,6 +29,14 @@
             <el-descriptions-item label="修改时间" :span="2">{{ result.updatetime }}</el-descriptions-item>
             <el-descriptions-item label="创建时间" :span="2">{{ result.createtime }}</el-descriptions-item>
             <el-descriptions-item label="参数"> <pre>{{ result.extparam }}</pre> </el-descriptions-item>
+            <el-descriptions-item label="图片">
+              <el-image
+                  style="max-width: 380px;"
+                  v-if="result.url"
+                  :src="G.imgHost + result.url"
+                  fit="contain">
+                </el-image>
+            </el-descriptions-item>
         </el-descriptions>
         </el-drawer>
     </div>
