@@ -136,12 +136,28 @@
             prop="op"
             label="操作">
             <template slot-scope="scope">
+              <el-button
+                title="反馈"
+                type='primary'
+                size="mini"
+                @click="handleEditRemark(scope.$index, scope.row)" v-if="scope.row.profile.remark==null" style="padding: 7px 10px;">
+                反馈
+                </el-button>
+              <el-button
+                title="反馈"
+                type='success'
+                size="mini"
+                @click="handleEditRemark(scope.$index, scope.row)" v-if="scope.row.profile.remark!=null" style="padding: 7px 10px;">
+                反馈
+                </el-button>
+
                 <el-button
                 title="修改"
                 type='primary'
                 size="mini"
                 icon="el-icon-edit"
-                @click="handleEdit(scope.$index, scope.row)"></el-button>
+                @click="handleEdit(scope.$index, scope.row)" style="margin-left: 0px;"></el-button>
+
                 <el-popconfirm
                 confirm-button-text='确定'
                 cancel-button-text='不用了'
@@ -180,6 +196,8 @@
         <el-lee-detail ref="infoDetail" :result="row" :drawer="drawer"></el-lee-detail>
         <!-- vip编辑 -->
         <el-lee-edit-vip ref="thisFormVip"></el-lee-edit-vip>
+        <!-- remark编辑 -->
+        <el-lee-edit-remark ref="thisFormRemark" :result='result'></el-lee-edit-remark>
     </div>
 </template>
 
@@ -191,13 +209,15 @@ import { mapActions } from 'vuex'
 import detail from '@/views/member/user/detail'
 import edit from '@/views/member/user/edit'
 import editVip from '@/views/member/user/edit.vip'
+import editRemark from '@/views/member/user/edit.remark'
 
 export default {
   name: 'app-users-user',
   components: {
     'el-lee-detail': detail,
     'el-lee-edit': edit,
-    'el-lee-edit-vip': editVip
+    'el-lee-edit-vip': editVip,
+    'el-lee-edit-remark': editRemark
   },
   // 局部刷新
   inject: ['reload'],
@@ -235,6 +255,15 @@ export default {
       this.$refs.thisFormVip.showDialog()
       setTimeout(() => {
         this.$refs.thisFormVip.setData(column)
+      })
+    },
+    // 编辑事件，触发后直接提取column数据传到dialog
+    handleEditRemark (index, column) {
+      // 显示dialog
+      this.$refs.thisFormRemark.showDialog()
+      // 重置set表单的值,这里有个坑，父组件调用子组件方法要加一个延时，因为子组件还没渲染
+      setTimeout(() => {
+        this.$refs.thisFormRemark.setData(column)
       })
     },
     // 修改状态

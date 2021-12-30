@@ -47,3 +47,11 @@ export function setVip (params) {
     params
   )
 }
+
+// 用户反馈信息记录
+export function setRemark (params) {
+  return axios().post(
+    baseUrl + '/user/setRemark',
+    params
+  )
+}

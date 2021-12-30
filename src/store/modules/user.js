@@ -1,4 +1,4 @@
-import { getUserLogList, getUserList, editUser, delUser, setVip } from '@/api/backend/user'
+import { getUserLogList, getUserList, editUser, delUser, setVip, setRemark } from '@/api/backend/user'
 
 const hosts = {
   state: {
@@ -50,6 +50,16 @@ const hosts = {
     setVip ({ commit }, params) {
       return new Promise((resolve, reject) => {
         setVip(params).then(response => {
+          resolve(response)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    // 用户反馈信息记录
+    setRemark ({ commit }, params) {
+      return new Promise((resolve, reject) => {
+        setRemark(params).then(response => {
           resolve(response)
         }).catch(error => {
           reject(error)

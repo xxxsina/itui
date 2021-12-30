@@ -30,7 +30,7 @@
             <el-descriptions-item label="注册IP">{{ result.joinip }}</el-descriptions-item>
             <el-descriptions-item label="最后登录IP">{{ result.loginip }} 『 {{ result.addressIp }} 』</el-descriptions-item>
             <el-descriptions-item label="登录失败次数" :span="2">{{ result.loginfailure }}</el-descriptions-item>
-            <el-descriptions-item label="头像">
+            <el-descriptions-item label="头像" :span="3">
                 <el-image
                   style="width: 100px; height: 100px"
                   v-if="result.profile.avatar"
@@ -44,6 +44,7 @@
                   fit="contain">
                 </el-image>
             </el-descriptions-item>
+            <el-descriptions-item label="反馈信息" label-class-name="cls-tb-label">{{ result.remark }} </el-descriptions-item>
         </el-descriptions>
         </el-drawer>
     </div>
