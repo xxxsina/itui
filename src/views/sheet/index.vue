@@ -343,6 +343,7 @@ export default {
     getList () {
       this.loading = true
       this.getFormList({
+        search: this.search,
         page: this.data.page
       }).then((res) => {
         this.data = res.data

@@ -151,6 +151,7 @@ export default {
     getList () {
       this.loading = true
       this.getUserLogList({
+        search: this.search,
         page: this.data.page
       }).then((res) => {
         this.data = res.data
