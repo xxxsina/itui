@@ -44,6 +44,12 @@
                     <el-radio :label="0">否</el-radio>
                 </el-radio-group>
             </el-form-item>
+            <el-form-item label="是否需要验证码" prop="is_captcha">
+                <el-radio-group v-model="result.is_captcha">
+                    <el-radio :label="1">是</el-radio>
+                    <el-radio :label="0">否</el-radio>
+                </el-radio-group>
+            </el-form-item>
             <el-form-item label="访问上限" prop="total_limit">
                 <el-input-number class="cls-input-number" v-model="result.total_limit" :min="0" :max="10000" placeholder="可以不填写"></el-input-number>
                 <el-tag type="danger" size="mini">为0时不限制</el-tag>
@@ -245,17 +251,17 @@ export default {
         ],
         remark: { max: 60, message: '备注不能超过60个字符', trigger: 'change' },
         url: {
-          validator: (rule, value, callback) => {
-            if (typeof value === 'undefined' || value === '') {
-              if (this.result.image === '') {
-                return callback(new Error('跳转连接和跳转二维码必选其一'))
-              }
-            }
+          // validator: (rule, value, callback) => {
+          //   if (typeof value === 'undefined' || value === '') {
+          //     if (this.result.image === '') {
+          //       return callback(new Error('跳转连接和跳转二维码必选其一'))
+          //     }
+          //   }
 
-            // 如果callback()代表验证通过
-            return callback()
-          },
-          trigger: 'blur'
+          //   // 如果callback()代表验证通过
+          //   return callback()
+          // },
+          // trigger: 'blur'
         }
       }
     }

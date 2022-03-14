@@ -82,22 +82,22 @@
             align="center"
             prop="name"
             label="表单名称"
-            width="140">
+            width="240">
               <template slot-scope="scope">
                 <el-button type="text" @click="handleDoc(scope.$index, scope.row)">{{ scope.row.name }}</el-button>
               </template>
             </el-table-column>
-            <el-table-column
+            <!-- <el-table-column
             align="center"
             prop="remark"
             label="备注"
             width="200">
-            </el-table-column>
+            </el-table-column> -->
             <el-table-column
             align="center"
             prop="total"
             label="填写次数"
-            width="70">
+            width="100">
             </el-table-column>
             <el-table-column
               align="center"
@@ -387,7 +387,8 @@ export default {
         image: '', // 填写完后显示二维码
         is_realname: 1, // 是否填写姓名
         is_phone: 1, // 是否填写电话
-        is_image: 0 // 是否上传截图
+        is_image: 0, // 是否上传截图
+        is_captcha: 1 // 是否需要验证码
       },
       rulesSearch: {
         content: [
