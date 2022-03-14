@@ -22,6 +22,12 @@
                     <el-radio :label="0">否</el-radio>
                 </el-radio-group>
             </el-form-item>
+            <el-form-item label="VIP独享" prop="is_vip">
+                <el-radio-group v-model="result.is_vip">
+                    <el-radio :label="1">是</el-radio>
+                    <el-radio :label="0">否</el-radio>
+                </el-radio-group>
+            </el-form-item>
             <el-form-item label="排序[升序]" prop="is_sort">
                 <el-input v-model="result.is_sort" placeholder="数字越小越靠前"></el-input>
             </el-form-item>

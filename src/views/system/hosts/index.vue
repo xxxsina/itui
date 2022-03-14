@@ -52,6 +52,16 @@
         </el-table-column>
         <el-table-column
           align="center"
+          prop="is_vip"
+          label="VIP独享"
+          width="100">
+            <template slot-scope="scope">
+                <el-tag size="small" type="success" v-if="scope.row.is_vip==1">是</el-tag>
+                <el-tag size="small" type="danger" v-else>否</el-tag>
+            </template>
+        </el-table-column>
+        <el-table-column
+          align="center"
           prop="is_sort"
           label="排序[升序]"
           width="100">
@@ -214,6 +224,7 @@ export default {
         host: '',
         status: 1,
         hot: 0,
+        is_vip: 0,
         is_sort: ''
       }
     }

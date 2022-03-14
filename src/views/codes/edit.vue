@@ -25,6 +25,7 @@
                     {{ val.host }}
                     </el-radio>
                 </el-radio-group>
+                <el-row><el-tag size="small" type="danger">已选择：{{result.short_url}} ; 如果用户自定义二级域名，编辑时可以直接提交，无效重新选择短域名</el-tag></el-row>
             </el-form-item>
             <el-form-item label="状态" prop="status">
                 <el-radio-group v-model="result.status">

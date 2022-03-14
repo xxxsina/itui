@@ -23,6 +23,16 @@
                     <el-form-item prop="content">
                         <el-input v-model="search.content" clearable placeholder="账号或者昵称"></el-input>
                     </el-form-item>
+                    <el-form-item prop="datetime" v-if="!this.G.isMobileInterView()">
+                        <el-date-picker
+                            v-model="search.vip_expire"
+                            type="daterange"
+                            value-format="yyyy-MM-dd"
+                            range-separator="至"
+                            start-placeholder="VIP查询开始日期"
+                            end-placeholder="VIP查询结束日期">
+                        </el-date-picker>
+                    </el-form-item>
                     <el-button icon="el-icon-search" round @click="submitSearchForm('searchForm')"></el-button>
                 </el-form>
             </el-col>
@@ -317,6 +327,7 @@ export default {
     getList () {
       this.loading = true
       this.getUserList({
+        search: this.search,
         page: this.data.page
       }).then((res) => {
         this.data = res.data
@@ -341,6 +352,7 @@ export default {
       },
       search: {
         datetime: '', // ['2021-11-01 23:59:59', '2021-11-03 00:00:01'],
+        vip_expire: '',
         content: ''
       },
       drawer: false,
@@ -364,7 +376,7 @@ export default {
           { min: 1, max: 15, message: '长度在 1 到 15 个字符', trigger: 'blur' },
           {
             validator: (rule, value, callback) => {
-              if (!value && !this.search.datetime) {
+              if (!value && !this.search.datetime && !this.search.vip_expire) {
                 return callback(new Error('请填写搜索内容'))
               }
               // 如果callback()代表验证通过
