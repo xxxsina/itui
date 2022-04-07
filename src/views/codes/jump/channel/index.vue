@@ -55,9 +55,18 @@
             align="center"
             prop="url"
             label="渠道连接"
-            width="360">
+            width="380">
               <template slot-scope="scope">
                 <el-input placeholder="请输入内容" v-model="scope.row.url" :id="'link' + scope.row.id" class="cls-tb-url-input">
+                  <template slot="prepend">
+                    <el-button
+                     title="跳转连接"
+                     icon="el-icon-link"
+                     class="cpbtn"
+                     circle size="mini"
+                     @click="clickLink(scope.row.url)">
+                    </el-button>
+                  </template>
                   <template slot="append">
                     <el-button
                      title="复制连接"
@@ -208,6 +217,10 @@ export default {
     ]),
     cancel () {
       this.$refs.thisForm.reset()
+    },
+    // 外链跳转
+    clickLink (url) {
+      window.open(url)
     },
     // 复制连接
     copyLink () {

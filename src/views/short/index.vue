@@ -61,9 +61,18 @@
             align="center"
             prop="short_url_text"
             label="短连接"
-            width="240">
+            width="280">
               <template slot-scope="scope">
                 <el-input placeholder="请输入内容" v-model="scope.row.short_url_text" :id="'link' + scope.row.id" class="cls-tb-url-input">
+                  <template slot="prepend">
+                    <el-button
+                     title="跳转连接"
+                     icon="el-icon-link"
+                     class="cpbtn"
+                     circle size="mini"
+                     @click="clickLink(scope.row.short_url_text)">
+                    </el-button>
+                  </template>
                   <template slot="append">
                     <el-button
                      title="复制连接"
@@ -80,6 +89,20 @@
             </el-table-column>
             <el-table-column
             align="center"
+            label="换域"
+            width="50">
+            <template slot-scope="scope">
+                <el-button
+                title="切换"
+                size="mini"
+                :icon="scope.row.xicon?'el-icon-loading':'el-icon-refresh'"
+                circle
+                @click="handleDomain(scope.$index, scope.row)">
+                </el-button>
+            </template>
+            </el-table-column>
+            <el-table-column
+            align="center"
             prop="name"
             label="名称"
             width="140">
@@ -92,9 +115,18 @@
             align="center"
             prop="url_addr"
             label="原连接"
-            width="300">
+            width="380">
               <template slot-scope="scope">
                 <el-input placeholder="请输入内容" v-model="scope.row.url" :id="'alink' + scope.row.id" class="cls-tb-url-input">
+                  <template slot="prepend">
+                    <el-button
+                     title="跳转连接"
+                     icon="el-icon-link"
+                     class="cpbtn"
+                     circle size="mini"
+                     @click="clickLink(scope.row.url)">
+                    </el-button>
+                  </template>
                   <template slot="append">
                     <el-button
                      title="复制连接"
@@ -231,10 +263,15 @@ export default {
     ...mapActions([
       'getShortUrlList',
       'editShortUrl',
-      'delShortUrl'
+      'delShortUrl',
+      'domain'
     ]),
     cancel () {
       this.$refs.thisForm.reset()
+    },
+    // 外链跳转
+    clickLink (url) {
+      window.open(url)
     },
     // 复制连接
     copyLink () {
@@ -258,6 +295,18 @@ export default {
       this.$refs.dialogTool.showDialog()
       this.$nextTick(() => {
         this.$refs.thisForm.disabled = false
+      })
+    },
+    // 切换域名
+    handleDomain (index, column) {
+      this.data.list[index].xicon = true
+      this.domain({
+        id: column.id,
+        mod: 'shorturl'
+      }).then((res) => {
+        this.$message.success(res.msg)
+        this.data.list[index].short_url_text = res.data.url
+        this.data.list[index].xicon = false
       })
     },
     // 编辑事件，触发后直接提取column数据传到dialog
@@ -355,6 +404,7 @@ export default {
   },
   data () {
     return {
+      xicon: 'refresh',
       loading: true,
       dialogToolDataDefault: {
         title: '添加',
@@ -379,6 +429,7 @@ export default {
         username: '',
         name: '',
         status: 1,
+        short_id: 0,
         short_url: '',
         short_url_text: '',
         is_delete: '',

@@ -40,6 +40,12 @@
             label="ID"
             width="80">
             </el-table-column>
+          <el-table-column
+            align="center"
+            prop="type"
+            label="操作平台"
+            width="80">
+          </el-table-column>
             <el-table-column
             align="center"
             prop="username"

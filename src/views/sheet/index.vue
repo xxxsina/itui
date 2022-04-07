@@ -61,9 +61,18 @@
             align="center"
             prop="short_url_text"
             label="表单连接"
-            width="240">
+            width="280">
               <template slot-scope="scope">
                 <el-input placeholder="请输入内容" v-model="scope.row.short_url_text" :id="'link' + scope.row.id" class="cls-tb-url-input">
+                  <template slot="prepend">
+                    <el-button
+                     title="跳转连接"
+                     icon="el-icon-link"
+                     class="cpbtn"
+                     circle size="mini"
+                     @click="clickLink(scope.row.short_url_text)">
+                    </el-button>
+                  </template>
                   <template slot="append">
                     <el-button
                      title="复制连接"
@@ -77,6 +86,20 @@
                   </template>
                 </el-input>
               </template>
+            </el-table-column>
+            <el-table-column
+            align="center"
+            label="换域"
+            width="50">
+            <template slot-scope="scope">
+                <el-button
+                title="切换"
+                size="mini"
+                :icon="scope.row.xicon?'el-icon-loading':'el-icon-refresh'"
+                circle
+                @click="handleDomain(scope.$index, scope.row)">
+                </el-button>
+            </template>
             </el-table-column>
             <el-table-column
             align="center"
@@ -221,14 +244,26 @@ export default {
     // 绑定数据
     this.getList()
   },
+  created () {
+    // page 这个必须要放在created才行啊
+    let _page = this.$route.params.page
+    if (typeof _page !== 'undefined') {
+      this.data.page = _page
+    }
+  },
   methods: {
     ...mapActions([
       'getFormList',
       'editForm',
-      'delForm'
+      'delForm',
+      'domain'
     ]),
     cancel () {
       this.$refs.thisForm.reset()
+    },
+    // 外链跳转
+    clickLink (url) {
+      window.open(url)
     },
     // 复制连接
     copyLink () {
@@ -248,6 +283,18 @@ export default {
       this.$refs.dialogTool.showDialog()
       this.$nextTick(() => {
         this.$refs.thisForm.disabled = false
+      })
+    },
+    // 切换域名
+    handleDomain (index, column) {
+      this.data.list[index].xicon = true
+      this.domain({
+        id: column.id,
+        mod: 'form'
+      }).then((res) => {
+        this.$message.success(res.msg)
+        this.data.list[index].short_url_text = res.data.url
+        this.data.list[index].xicon = false
       })
     },
     // 编辑事件，触发后直接提取column数据传到dialog
@@ -286,7 +333,7 @@ export default {
     // 按钮跳转到formlog页面
     handleLink (index, column) {
       // name : sheet/form 为router/index.js里面的name
-      this.$router.push({name: 'sheet/form', params: {'parent_id': column.id}})
+      this.$router.push({name: 'sheet/form', params: {'goback': 'sheet', 'parent_id': column.id, 'uid': column.uid, 'page': this.data.page}})
     },
     // 删除事件
     handleDelete (index, column) {
@@ -379,6 +426,7 @@ export default {
         username: '',
         name: '',
         status: 1,
+        short_id: 0,
         short_url: '',
         total_limit: 0,
         remark: '',

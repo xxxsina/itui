@@ -13,11 +13,11 @@
             <el-form-item label="原连接" prop="url">
                 <el-input v-model="result.url" placeholder="原连接：http://..."></el-input>
             </el-form-item>
-            <el-form-item label="短域名" prop="short_url">
-                <el-radio-group v-model="result.short_url">
+            <el-form-item label="短域名" prop="short_id">
+                <el-radio-group v-model="result.short_id">
                     <el-radio
                      v-for="(val, k) in shortUrls"
-                     :label="val.host"
+                     :label="val.id"
                      :key="k">
                     {{ val.host }}
                     </el-radio>
@@ -187,7 +187,7 @@ export default {
         url: [
           { required: true, message: '请填写连接', trigger: 'change' }
         ],
-        short_url: [
+        short_id: [
           { required: true, message: '请选择短域名', trigger: 'change' }
         ],
         pwd: [

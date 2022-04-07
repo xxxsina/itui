@@ -9,6 +9,7 @@
         :visible.sync="drawer"
         :with-header="true">
         <el-descriptions :title="result.username + '操作详情'" direction="vertical" :column="4" border class="cls-draw-desc">
+            <el-descriptions-item label="操作平台">{{ result.type }}</el-descriptions-item>
             <el-descriptions-item label="ID">{{ result.id }}</el-descriptions-item>
             <el-descriptions-item label="账号">{{ result.username }}</el-descriptions-item>
             <el-descriptions-item label="操作时间" :span="3">{{ result.createtime }}</el-descriptions-item>

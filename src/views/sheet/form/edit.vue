@@ -173,7 +173,7 @@ export default {
           { required: true, message: '手机号必须填写', trigger: 'change' },
           {
             validator: (rule, value, callback) => {
-              if (!/^[1][3,4,5,7,8,9][0-9]{9}$/.test(value)) {
+              if (!/^[1][3,4,5,6,7,8,9][0-9]{9}$/.test(value)) {
                 return callback(new Error('请填写正确的手机号码'))
               }
               // 如果callback()代表验证通过

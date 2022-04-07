@@ -90,7 +90,7 @@ export default {
           { required: true, message: '请输入手机号', trigger: 'blur' },
           {
             validator: (rule, value, callback) => {
-              if (value !== 'admin' && !/^[1][3,4,5,7,8,9][0-9]{9}$/.test(value)) {
+              if (value !== 'admin' && !/^[1][3,4,5,6,7,8,9][0-9]{9}$/.test(value)) {
               // 如果callback(new Error('错误要提示的信息'))代表验证不通过
                 return callback(new Error('请填写正确的手机号码'))
               }

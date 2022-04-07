@@ -10,11 +10,11 @@
             <el-form-item label="表单名称" prop="name">
                 <el-input v-model="result.name" placeholder="表单名称"></el-input>
             </el-form-item>
-            <el-form-item label="短域名" prop="short_url">
-                <el-radio-group v-model="result.short_url">
+            <el-form-item label="短域名" prop="short_id">
+                <el-radio-group v-model="result.short_id">
                     <el-radio
                      v-for="(val, k) in shortUrls"
-                     :label="val.host"
+                     :label="val.id"
                      :key="k">
                     {{ val.host }}
                     </el-radio>
@@ -246,7 +246,7 @@ export default {
         status: [
           { required: true, message: '请选择状态', trigger: 'change' }
         ],
-        short_url: [
+        short_id: [
           { required: true, message: '请选择短域名', trigger: 'change' }
         ],
         remark: { max: 60, message: '备注不能超过60个字符', trigger: 'change' },

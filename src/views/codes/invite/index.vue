@@ -61,9 +61,18 @@
             align="center"
             prop="url_addr"
             label="活码"
-            width="240">
+            width="280">
               <template slot-scope="scope">
                 <el-input placeholder="请输入内容" v-model="scope.row.url_addr" :id="'link' + scope.row.id" class="cls-tb-url-input">
+                  <template slot="prepend">
+                    <el-button
+                     title="跳转连接"
+                     icon="el-icon-link"
+                     class="cpbtn"
+                     circle size="mini"
+                     @click="clickLink(scope.row.url_addr)">
+                    </el-button>
+                  </template>
                   <template slot="append">
                     <el-button
                      title="复制连接"
@@ -77,6 +86,20 @@
                   </template>
                 </el-input>
               </template>
+            </el-table-column>
+            <el-table-column
+            align="center"
+            label="换域"
+            width="50">
+            <template slot-scope="scope">
+                <el-button
+                title="切换"
+                size="mini"
+                :icon="scope.row.xicon?'el-icon-loading':'el-icon-refresh'"
+                circle
+                @click="handleDomain(scope.$index, scope.row)">
+                </el-button>
+            </template>
             </el-table-column>
             <el-table-column
             align="center"
@@ -229,14 +252,26 @@ export default {
     // 绑定数据
     this.getList()
   },
+  created () {
+    // page 这个必须要放在created才行啊
+    let _page = this.$route.params.page
+    if (typeof _page !== 'undefined') {
+      this.data.page = _page
+    }
+  },
   methods: {
     ...mapActions([
       'getJumpList',
       'editJump',
-      'delJump'
+      'delJump',
+      'domain'
     ]),
     cancel () {
       this.$refs.thisForm.reset()
+    },
+    // 外链跳转
+    clickLink (url) {
+      window.open(url)
     },
     // 复制连接
     copyLink () {
@@ -262,6 +297,18 @@ export default {
         this.$refs.thisForm.disabled = false
       })
     },
+    // 切换域名
+    handleDomain (index, column) {
+      this.data.list[index].xicon = true
+      this.domain({
+        id: column.id,
+        mod: 'jump'
+      }).then((res) => {
+        this.$message.success(res.msg)
+        this.data.list[index].url_addr = res.data.url
+        this.data.list[index].xicon = false
+      })
+    },
     // 编辑事件，触发后直接提取column数据传到dialog
     handleEdit (index, column) {
       this.dialogToolDataDefault.title = '修改'
@@ -275,7 +322,7 @@ export default {
     },
     // 按钮跳转
     handleLink (index, column) {
-      this.$router.push({name: 'invite/channel', params: {'parent_id': column.id, 'uid': column.uid}})
+      this.$router.push({name: 'invite/channel', params: {'goback': 'invite', 'parent_id': column.id, 'uid': column.uid, 'page': this.data.page}})
     },
     // 修改状态
     handleEditStatus (index, column) {
@@ -389,6 +436,7 @@ export default {
         username: '',
         name: '',
         smod: 1,
+        short_id: 0,
         short_url: '',
         extend: '',
         status: 1,

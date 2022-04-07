@@ -28,3 +28,11 @@ export function getVipConfig () {
     baseUrl + '/getVipConfig'
   )
 }
+
+// 切换域名
+export function domain (params) {
+  return axios().post(
+    baseUrl + '/domain',
+    params
+  )
+}

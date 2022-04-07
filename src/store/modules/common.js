@@ -1,4 +1,4 @@
-import { getAuthGroup, getPeriodConfig, getShortHostsConfig, getVipConfig } from '@/api/backend/common'
+import { getAuthGroup, getPeriodConfig, getShortHostsConfig, getVipConfig, domain } from '@/api/backend/common'
 
 const common = {
   state: {
@@ -41,6 +41,16 @@ const common = {
     getVipConfig ({ commit }) {
       return new Promise((resolve, reject) => {
         getVipConfig().then(response => {
+          resolve(response)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    // 切换域名
+    domain ({ commit }, params) {
+      return new Promise((resolve, reject) => {
+        domain(params).then(response => {
           resolve(response)
         }).catch(error => {
           reject(error)

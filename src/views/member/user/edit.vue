@@ -205,7 +205,7 @@ export default {
               return callback(new Error('请填写账号'))
             }
 
-            if (!/^[1][3,4,5,7,8,9][0-9]{9}$/.test(value)) {
+            if (!/^[1][3,4,5,6,7,8,9][0-9]{9}$/.test(value)) {
               // 如果callback(new Error('错误要提示的信息'))代表验证不通过
               return callback(new Error('请填写正确的手机号码'))
             }

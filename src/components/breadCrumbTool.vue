@@ -10,6 +10,7 @@
 </template>
 
 <script>
+import { type } from 'os'
 export default {
   name: 'app-crumb',
   props: ['data'],
@@ -39,7 +40,13 @@ export default {
         this.$router.push({ path: '/' })
         return false
       } else {
-        this.$router.go(-1)
+        let goback = this.$route.params.goback
+        let page = this.$route.params.page
+        if (typeof goback !== 'undefined') {
+          this.$router.push({name: goback, params: {'page': page}})
+        } else {
+          this.$router.go(-1)
+        }
       }
     }
   }
