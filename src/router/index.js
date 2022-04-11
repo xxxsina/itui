@@ -5,7 +5,7 @@ import VueCookie from 'vue-cookie'
 Vue.use(Router)
 
 const router = new Router({
-  mode: 'history',  // 加上后域名后面的#就消失了 yesh
+  mode: 'history', // 加上后域名后面的#就消失了 yesh
   routes: [
     {
       path: '/login',

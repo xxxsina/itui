@@ -151,7 +151,7 @@
               align="center"
               prop="status"
               label="状态"
-              width="100">
+              width="70">
               <template slot-scope="scope">
                 <el-switch
                   v-model="scope.row.status"
@@ -167,7 +167,13 @@
             align="center"
             prop="updatetime"
             label="修改时间"
-            width="140">
+            width="136">
+            </el-table-column>
+            <el-table-column
+            align="center"
+            prop="createtime"
+            label="创建时间"
+            width="136">
             </el-table-column>
             <el-table-column
             align="center"
@@ -302,7 +308,7 @@ export default {
       this.data.list[index].xicon = true
       this.domain({
         id: column.id,
-        mod: 'shorturl'
+        mod: 'shortUrl'
       }).then((res) => {
         this.$message.success(res.msg)
         this.data.list[index].short_url_text = res.data.url

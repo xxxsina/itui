@@ -146,6 +146,12 @@
             </el-table-column>
             <el-table-column
             align="center"
+            prop="createtime"
+            label="创建时间"
+            width="140">
+            </el-table-column>
+            <el-table-column
+            align="center"
             prop="op"
             class="cls-op"
             label="操作">

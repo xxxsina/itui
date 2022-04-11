@@ -126,12 +126,12 @@
             label="跳转次数"
             width="100">
             </el-table-column>
-            <el-table-column
+            <!-- <el-table-column
             align="center"
             prop="remark"
             label="备注"
             width="200">
-            </el-table-column>
+            </el-table-column> -->
             <el-table-column
             align="center"
             prop="status"
@@ -152,6 +152,12 @@
             align="center"
             prop="updatetime"
             label="修改时间"
+            width="140">
+            </el-table-column>
+            <el-table-column
+            align="center"
+            prop="createtime"
+            label="创建时间"
             width="140">
             </el-table-column>
             <el-table-column

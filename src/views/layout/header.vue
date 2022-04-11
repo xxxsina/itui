@@ -42,7 +42,7 @@
                             <el-dropdown-item class="cls-drop-item-user-bottom" style="padding: 10px 0;">
                                 <el-row>
                                     <el-col :span="8" :offset="2">
-                                        <el-link :underline=false class="cls-col-a1" href="#/system/profile">
+                                        <el-link :underline=false class="cls-col-a1" href="/system/profile">
                                             <i class="el-icon-user-solid"></i>
                                             个人资料
                                         </el-link>
