@@ -60,6 +60,7 @@
                 <el-image
                   style="width: 100px; height: 100px"
                   :src="G.imgHost + scope.row.url"
+                  :preview-src-list="[G.imgHost + scope.row.url]"
                   fit="contain">
                 </el-image>
               </template>
